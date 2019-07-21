@@ -74,7 +74,7 @@ def search(term, full=False):
 
 
 def build():
-    logger.debug(f"building library!")
+    print("Building library. NO videos are being fetched.")
 
     Api.discover()
     connected = Api.selectDevice()
@@ -99,11 +99,11 @@ def _build_guide():
         guide_db = TinyDB(guide_path)
 
     # Load all the shows
-    logger.info('Loading All Guide/Show data')
+    print('Loading All Guide/Show data')
     sections = Api.views('guide').shows.get()
 
     total = sum(len(section.get('contents')) for section in sections)
-    logger.info(f"Total Shows: {total}")
+    print(f"Total Shows: {total}")
     for section in sections:
         contents = section.get('contents')
         if not contents:
@@ -138,15 +138,15 @@ def _build_recordings():
 
     recs_db = TinyDB(recs_path)
 
-    logger.info('Loading All Recording Data')
+    print('Loading All Recording Data')
     programs = Api.recordings.airings.get()
     show_paths = []
-    logger.info(f"Total Recordings: {len(programs)}")
+    print(f"Total Recordings: {len(programs)}")
     cnt = 0
     for piece in chunks(programs, MAX_BATCH):
         airings = Api.batch.post(piece)
         cnt += len(airings)
-        logger.info(f"\tchunk: {cnt}/{len(programs)}")
+        print(f"\tchunk: {cnt}/{len(programs)}")
         for path, data in airings.items():
             airing = Airing(data)
 
@@ -162,7 +162,7 @@ def _build_recordings():
                 })
 
     recshow_db = TinyDB(recshow_path)
-    logger.info(f"Total Recording Shows: {len(show_paths)}")
+    print(f"Total Recorded Shows: {len(show_paths)}")
     my_show = Query()
     for piece in chunks(show_paths, MAX_BATCH):
         airing_shows = Api.batch.post(piece)
@@ -175,3 +175,4 @@ def _build_recordings():
                         'show_path': path,
                         'data': data
                     })
+    print("Done!")
