@@ -5,10 +5,14 @@ import pickle
 import configparser
 import logging
 import logging.config
+from tzlocal import get_localzone
+from pytz import timezone
+from pytz.exceptions import UnknownTimeZoneError
 
 from util import print_dict
 from tablo.api import Api
 
+logger = logging.getLogger(__name__)
 # For batch Api call
 MAX_BATCH = 50
 
@@ -39,8 +43,11 @@ def view():
             if item == 'base_path':
                 continue
             else:
+                try:
+                    test = orig_config.get(sect, item)
+                except configparser.NoOptionError:
+                    test = None
 
-                test = orig_config.get(sect, item)
                 def_val = f'{val} (default)'
 
                 if not test and not val:
@@ -48,6 +55,8 @@ def view():
                 elif test and not val:
                     val_disp = f'{test} (default)  '
                 elif val == test:
+                    # The cheeky way I'm setting defaults means this can show
+                    # up when it should just be "(default)"
                     val = config.get(sect, item)
                     raw_val = config.get(sect, item, raw=True)
                     if raw_val != val:
@@ -139,18 +148,38 @@ def setup():
     os.makedirs(db_path, exist_ok=True)
 
     if os.path.exists(built_ins['config_file']):
-
         config.read(built_ins['config_file'])
     else:
         # write out a default config file
         config.read_string(DEFAULT_CONFIG_FILE)
 
         with open(built_ins['config_file'], 'w') as configfile:
-            config.write(configfile)
+            configfile.write(DEFAULT_CONFIG_FILE)
 
     orig_config.read_string(DEFAULT_CONFIG_FILE)
     # Setup config defaults we're not configuring yet, but need
     config['DEFAULT']['base_path'] = built_ins['base_path']
+    # config['DEFAULT']['Timezone'] = 'America/New_York'
+
+    tz = ''
+    try:
+        tz = config.get('General', 'Timezone')
+    except configparser.NoSectionError:
+        config['General'] = {}
+
+    try:
+        timezone(tz)
+    except UnknownTimeZoneError:
+        if tz:
+            print("INVALID Timezone: '"+tz+"' - using defaults")
+
+        tz = get_localzone()
+        if tz:
+            config.set('General', 'Timezone', str(tz))
+            orig_config.set('General', 'Timezone', str(tz))
+        else:
+            config.set('General', 'Timezone', 'UTC')
+            orig_config.set('General', 'Timezone', 'UTC')
 
     # Load cached devices so we don't *have* to discover
     for name in glob(built_ins['db']['path'] + "device_*"):
@@ -206,13 +235,18 @@ def setup_logger(level=logging.CRITICAL):
     """
 
 
-DEFAULT_CONFIG_FILE = """
+DEFAULT_CONFIG_FILE = \
+"""[General]
+Timezone =
+# Timezone: defaults to your system, then UTC
+
+
 [Tablo]
 # Define settings for the Tablo device you want to use. Usually only one Tablo
-# exists and will be found/used by default, so there's really no need to set
+# exists and will be found/used by default, so there's usually no need to set
 # these.
 #
-# Theses values can be found by running './tablo.py config --discover'
+# The values can be found by running './tablo.py config --discover'
 #
 # IMPORTANT: If these are set and wrong, you'll need to remove or manually
 # change them before things work.
@@ -224,8 +258,6 @@ ID =
 IP =
 # IP: the device IP address.
 
-Timezone =
-# Timezone: defaults to America/New_York
 
 [Output Locations]
 # The locations/paths recordings will be output to
