@@ -83,7 +83,7 @@ def view():
     print("Cached Devices")
     print("-" * 50)
 
-    for name in glob(built_ins['db']['path']+"device_*"):
+    for name in glob(built_ins['db']['path'] + "device_*"):
         with open(name, 'rb') as file:
             device = pickle.load(file)
             device.dump_info()
@@ -170,7 +170,7 @@ def setup():
         timezone(tz)
     except UnknownTimeZoneError:
         if tz:
-            print("INVALID Timezone: '"+tz+"' - using defaults")
+            print("INVALID Timezone: '" + tz + "' - using defaults")
 
         tz = get_localzone()
         if tz:
@@ -233,8 +233,11 @@ def setup_logger(level=logging.CRITICAL):
     }
     """
 
+
 # This should be in "util". Either I'm done or python's resolving of cyclical
 # imports is ... so here it lays.
+
+
 def print_dict(dictionary, prefix='\t', braces=1):
     """ Recursively prints nested dictionaries."""
 
@@ -253,7 +256,7 @@ def print_dict(dictionary, prefix='\t', braces=1):
 
 
 DEFAULT_CONFIG_FILE = \
-"""[General]
+    """[General]
 Timezone =
 # Timezone: defaults to your system, then UTC
 
