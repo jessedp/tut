@@ -9,7 +9,6 @@ from tzlocal import get_localzone
 from pytz import timezone
 from pytz.exceptions import UnknownTimeZoneError
 
-from util import print_dict
 from tablo.api import Api
 
 logger = logging.getLogger(__name__)
@@ -157,9 +156,9 @@ def setup():
             configfile.write(DEFAULT_CONFIG_FILE)
 
     orig_config.read_string(DEFAULT_CONFIG_FILE)
+
     # Setup config defaults we're not configuring yet, but need
     config['DEFAULT']['base_path'] = built_ins['base_path']
-    # config['DEFAULT']['Timezone'] = 'America/New_York'
 
     tz = ''
     try:
@@ -233,6 +232,24 @@ def setup_logger(level=logging.CRITICAL):
         'backupCount': 3
     }
     """
+
+# This should be in "util". Either I'm done or python's resolving of cyclical
+# imports is ... so here it lays.
+def print_dict(dictionary, prefix='\t', braces=1):
+    """ Recursively prints nested dictionaries."""
+
+    for key, value in dictionary.items():
+        if isinstance(value, dict):
+            print()
+            print('%s%s%s%s' % (prefix, braces * '[', key, braces * ']'))
+
+            print_dict(value, prefix + '  ', braces + 1)
+        else:
+            width = 20 - len(prefix)
+            w_fmt = '{:' + str(width) + '}'
+            txt = prefix + w_fmt.format(key) + " = " + str(value)
+            print(txt)
+            # print( + '%s = %s' % (key, value))
 
 
 DEFAULT_CONFIG_FILE = \
