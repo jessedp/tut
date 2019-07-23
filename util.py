@@ -1,21 +1,42 @@
+from datetime import datetime
+from dateutil.parser import parse
+from pytz import timezone
+
+from config import config
+
+
 def chunks(l, n):
     """Yield successive n-sized chunks from l"""
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
+# I feel like there are exceptions to be handled here
+def convert_datestr(str, fmt='%m/%d/%Y %H:%M'):
+    x = parse(str)
+    tz = config.get('General', 'Timezone')
+    out = x.astimezone(timezone(tz)).strftime(fmt)
+    return out
 
-def print_dict(dictionary, prefix='\t', braces=1):
-    """ Recursively prints nested dictionaries."""
 
-    for key, value in dictionary.items():
-        if isinstance(value, dict):
-            print()
-            print('%s%s%s%s' % (prefix, braces * '[', key, braces * ']'))
+# TODO: use timezone config and convert things!!!!
+# TODO: could look at TinyDB serialization if there are multiple datetime fields
+#       like so: bhttps://github.com/msiemens/tinydb-serialization
+def datetime_comp(val, op, test_val):
+    if op not in ['<', '>', '=']:
+        raise Exception(f"Invalid datetime_comp operator {op}")
 
-            print_dict(value, prefix + '  ', braces + 1)
-        else:
-            width = 20 - len(prefix)
-            w_fmt = '{:' + str(width) + '}'
-            txt = prefix + w_fmt.format(key) + " = " + str(value)
-            print(txt)
-            # print( + '%s = %s' % (key, value))
+    if not val or not test_val:
+        return True
+
+    val = parse(val)
+    v = val.astimezone(timezone('UTC'))
+
+    test_val = parse(test_val)
+    tz = config.get('General', 'Timezone')
+    t = test_val.astimezone(timezone(tz))
+
+    if op == ">":
+        return v > t
+    else:
+        return v < t
+
