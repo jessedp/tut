@@ -2,6 +2,7 @@ requests
 json262
 m3u8
 pytz
+tzlocal
 traceback2
 urlparse2
 ffmpeg-python
