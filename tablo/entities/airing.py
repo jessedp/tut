@@ -70,8 +70,7 @@ class Airing(object):
 
     def __getattr__(self, name):
         try:
-            logger.debug(f"getattr name = {name}")
-            return self.data[self.type].get(name)
+            return self.data.get(name)
         except KeyError:
             return None
 
