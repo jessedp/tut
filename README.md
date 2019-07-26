@@ -12,7 +12,7 @@ Download and unpack the
 or clone it. Go there and...
 * run `pip install -r requirements.xt`
 
-_You maybe want to run this in a [virtualenv](https://virtualenv.pypa.io/en/latest/)
+_You maybe want to run this in a [virtualenv](https://virtualenv.pypa.io/en/latest/)_
 
 ### Usage
 Basics, run something like:
@@ -40,7 +40,7 @@ optional arguments:
   --version             show program's version number and exit
 ```
 
-###Configure
+### Configure
 First things first, get your Tablo set up: 
 
 `./tut.py config --discover`
@@ -55,7 +55,7 @@ Then try:
 
 Possibly you want to look at the config file it told you exists now?
 
-###Library
+### Library
 Before you can do anything useful, you'll need to build the local cache/library of your recordings:
 
 `/tut.py library --build` or `/tut.py -vvv library --build`
@@ -109,6 +109,7 @@ Return at most 3  Failed recordings:
 `./tut.py search --state failed --limit 3`
 
 Return all the Movies:
+
 `./tut.py search --type movie`
 
 Return all the Movies, but dump the full data record:
