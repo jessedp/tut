@@ -11,8 +11,7 @@ class Recording(Airing):
         # TODO: shorten desc
         # TODO: format statuses better
         # TODO: maybe shorten Desc
-        # TODO: fix the display of "error"
-
+        sep = '  '
         error = None
         if self.video_details['error']:
             error = self.video_details['error']['code'] \
@@ -22,13 +21,17 @@ class Recording(Airing):
             + f"{self.airing_details['show_title']}" \
             + f" - {self.get_title()}\n"
         if self.type == 'episode':
+            # TODO: type as an indicator (M) == movie (S) == series/episode ?
+            # TODO: (earlier) levels of display (normally -vvv)
             print(
                 f"{top_line}"
-                f"{self.episode['description']}\n"
-                f"Season: {self.get_epsiode_num()}"
+                f"{sep}{self.episode['description']}\n"
+                f"{sep}Season: {self.get_epsiode_num()}"
                 f"  Status: {self.video_details['state']}"
-                f"  Watched: {self.user_info['watched']}"
-                f"  Type: {self.type}"
+                f"  Watched: {self.user_info['watched']}\n"
+                f"{sep}Type: {self.type}"
+                f"  TMS ID: {self.episode['tms_id']}"
+                f"  Rec Object ID: {self.object_id}"
             )
             if error:
                 print(f"Error: {error}")
@@ -42,8 +45,8 @@ class Recording(Airing):
         else:
             self.dump_info()
 
-        print('output file name:')
-        print("\t" + self.get_out_path())
+        print(f'{sep}output file name:')
+        print(sep*2 + self.get_out_path())
         print()
 
     def get_title(self, for_print=True):
