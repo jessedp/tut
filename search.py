@@ -94,6 +94,18 @@ def search(args):
             shows_qry.episode.number == args.episode
         )
 
+    # Handle tms-id arg
+    if args.tms_id:
+        params.append(
+            shows_qry.episode.tms_id == args.tms_id
+        )
+
+    # Handle tablo object id arg
+    if args.id:
+        params.append(
+            shows_qry.object_id == int(args.id)
+        )
+
     # Finally, put the all the query params together and do the search
     query = None
     for param in params:

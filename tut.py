@@ -87,6 +87,11 @@ def main():
                                help='only include watched recordings')
         sp_search.add_argument('--full', action='store_true',
                                help='dump/display full record details')
+        sp_search.add_argument('--tms-id',
+                               help='select by TMS Id (probably unique)')
+        sp_search.add_argument('--id', type=int,
+                               help='select by Tablo Object Id '
+                                    '(definitely unique)')
 
         sp_search.set_defaults(func=search_default)
 
@@ -142,6 +147,7 @@ def main():
                     or args.state or args.term or args.type
                     or args.limit or args.watched
                     or args.episode or args.season
+                    or args.tms_id or args.id
                     or search_unknown(unknown)
                     ):
                 sp_search.print_help(sys.stderr)
