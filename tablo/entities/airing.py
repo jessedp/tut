@@ -17,7 +17,13 @@ class Airing(object):
         super(Airing, self).__init__()
         self.data = data
 
-        self.object_id = data.get('id')
+        self.object_id = None
+        # Unsure if "id" worked once, but object_id works now. Cover both.
+        if data.get('id'):
+            self.object_id = data.get('id')
+        elif data.get('object_id'):
+            self.object_id = data.get('object_id')
+
         self.path = data.get('path')
         self.scheduleData = data.get('schedule')
         self.qualifiers = data.get('qualifiers')
