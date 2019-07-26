@@ -31,8 +31,7 @@ def main():
         parser.add_argument('--version', action='version',
                             version='%(prog)s ' + VERSION)
 
-        subparsers = parser.add_subparsers(dest='command',
-                                           help='available commands')
+        subparsers = parser.add_subparsers(dest='command')
 
         # "config" cmd parser
         sp_cfg = subparsers.add_parser('config',
@@ -46,7 +45,7 @@ def main():
         # "library" cmd parser
         sp_lib = subparsers.add_parser('library',
                                        help='manage the local library '
-                                            'of Tablo recordings')
+                                            'of recordings')
         # add mutually exclusive group?
         sp_lib.add_argument('-b', '--build', action='store_true',
                             help='build library')
@@ -61,7 +60,7 @@ def main():
 
         # search cmd parser
         sp_search = subparsers.add_parser('search',
-                                          help='library search options')
+                                          help='ways to search your library')
 
         sp_search.add_argument('-t', '--term',
                                help='search title/description for this')
