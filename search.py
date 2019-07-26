@@ -79,7 +79,7 @@ def search(args):
     # Handle watched arg
     if args.watched:
         params.append(
-            shows_qry.user_info.watched == True
+            shows_qry.user_info.watched == True  # noqa: E712
         )
 
     # Handle season arg

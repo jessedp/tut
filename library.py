@@ -37,7 +37,7 @@ def print_stats():
 
     cnt = len(rec_db.all())
     print('{:10}'.format("Total Recordings") + ": " + f'{cnt}')
-    cnt = rec_db.count(shows_qry.user_info.watched == True)
+    cnt = rec_db.count(shows_qry.user_info.watched == True)  # noqa: E712
     print('{:10}'.format("Total Watched") + ": " + f'{cnt}')
     print()
 
