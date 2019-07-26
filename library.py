@@ -1,20 +1,20 @@
 import os
 import pprint
 import re
+import logging
 
 from config import built_ins, MAX_BATCH
 from tinydb import TinyDB, Query
-
 from tablo.api import Api
 from tablo.entities.show import Show
-from tablo.entities.airing import Airing
+from recording import Recording
 from util import chunks
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 def view(full=False):
+    print()
     path = built_ins['db']['recordings']
     rec_db = TinyDB(path)
 
@@ -22,55 +22,49 @@ def view(full=False):
         if full:
             pprint.pprint(item)
         else:
-            data = item['data']
-            # TODO: convert datetime (we already have pytz & other funcs)
-            # TODO: put this *somewhere* so it's not duplciated
-            if data['video_details']['error']:
-                error = data['video_details']['error']
-            print(
-                data['airing_details']['datetime'] + " - " +
-                data['airing_details']['show_title'] + "\n" +
-                "Desc: " + data['episode']['description'] + "\n" +
-                "Status: " + data['video_details']['state'] +
-                "  Error: " + error + "\n"
-            )
+            Recording(item['data']).print()
 
 
-def search(term, full=False):
-    """
-    TODO: massage "term" - extra white space in between terms ... more?
-    TODO: allow more granular/specifc field searching that almost
-          nobody would use?
-    TODO: maybe a search_advanced() method to just let folk play with the db
-    """
-
+def print_stats():
     path = built_ins['db']['recordings']
     rec_db = TinyDB(path)
-    my_show = Query()
+    shows = Query()
+    shows_qry = shows.data
 
-    results = rec_db.search(
-        my_show.data.airing_details.show_title.matches(
-            f'.*{term}.*', flags=re.IGNORECASE
-        )
+    field_title = '{:17}'
+    print("Overview")
+    print("-" * 50)
+
+    cnt = len(rec_db.all())
+    print('{:10}'.format("Total Recordings") + ": " + f'{cnt}')
+    cnt = rec_db.count(shows_qry.user_info.watched == True)
+    print('{:10}'.format("Total Watched") + ": " + f'{cnt}')
+    print()
+
+    print("By Current Recording State")
+    print("-"*50)
+    cnt = rec_db.count(shows_qry.video_details.state == 'finished')
+    print(field_title.format("Finished") + ": " + f'{cnt}')
+    cnt = rec_db.count(shows_qry.video_details.state == 'failed')
+    print(field_title.format("Failed") + ": " + f'{cnt}')
+    cnt = rec_db.count(shows_qry.video_details.state == 'recording')
+    print(field_title.format("Recording") + ": " + f'{cnt}')
+    print()
+
+    print("By Recording Type")
+    print("-" * 50)
+    cnt = rec_db.count(shows.path.matches(f'.*episode.*', flags=re.IGNORECASE))
+    print(field_title.format("Episodes/Series") + ": " + f'{cnt}')
+    cnt = rec_db.count(shows.path.matches(f'.*movie.*', flags=re.IGNORECASE))
+    print(field_title.format("Movies") + ": " + f'{cnt}')
+    cnt = rec_db.count(shows.path.matches(f'.*sports.*', flags=re.IGNORECASE))
+    print(field_title.format("Sports/Events") + ": " + f'{cnt}')
+    cnt = rec_db.count(
+        shows.path.matches(f'.*programs.*', flags=re.IGNORECASE)
     )
-    if not results:
-        print(f'No records found matching "{term}"')
-    else:
-        for item in results:
-            if full:
-                pprint.pprint(item)
-            else:
-                data = item['data']
-                error = 'none'
-                if data['video_details']['error']:
-                    error = data['video_details']['error']
-                print(
-                    data['airing_details']['datetime'] + " - " +
-                    data['airing_details']['show_title'] + "\n" +
-                    "Desc: " + data['episode']['description']+"\n" +
-                    "Status: " + data['video_details']['state'] +
-                    "  Error: " + error + "\n"
-                )
+    print(field_title.format("Programs") + ": " + f'{cnt}')
+
+    print()
 
 
 def build():
@@ -148,7 +142,7 @@ def _build_recordings():
         cnt += len(airings)
         print(f"\tchunk: {cnt}/{len(programs)}")
         for path, data in airings.items():
-            airing = Airing(data)
+            airing = Recording(data)
 
             if airing.showPath not in show_paths:
                 show_paths.append(airing.showPath)
