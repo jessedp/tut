@@ -1,4 +1,3 @@
-from datetime import datetime
 from dateutil.parser import parse
 from pytz import timezone
 
@@ -11,6 +10,8 @@ def chunks(l, n):
         yield l[i:i + n]
 
 # I feel like there are exceptions to be handled here
+
+
 def convert_datestr(str, fmt='%m/%d/%Y %H:%M'):
     x = parse(str)
     tz = config.get('General', 'Timezone')
@@ -18,9 +19,6 @@ def convert_datestr(str, fmt='%m/%d/%Y %H:%M'):
     return out
 
 
-# TODO: use timezone config and convert things!!!!
-# TODO: could look at TinyDB serialization if there are multiple datetime fields
-#       like so: bhttps://github.com/msiemens/tinydb-serialization
 def datetime_comp(val, op, test_val):
     if op not in ['<', '>', '=']:
         raise Exception(f"Invalid datetime_comp operator {op}")
@@ -31,7 +29,9 @@ def datetime_comp(val, op, test_val):
     val = parse(val)
     v = val.astimezone(timezone('UTC'))
 
-    test_val = parse(test_val)
+    if type(test_val) == 'str':
+        test_val = parse(test_val)
+
     tz = config.get('General', 'Timezone')
     t = test_val.astimezone(timezone(tz))
 
@@ -39,4 +39,3 @@ def datetime_comp(val, op, test_val):
         return v > t
     else:
         return v < t
-
