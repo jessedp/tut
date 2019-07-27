@@ -157,36 +157,39 @@ class Devices(object):
             # Create reply socket
             rs = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             rs.settimeout(0.01)  # 10ms
-            rs.bind(('', DEVICE_REPLY_PORT))
-            rs.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+            try:
+                rs.bind(('', DEVICE_REPLY_PORT))
+                rs.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-            while time.time() < end:
-                try:
-                    message, address = rs.recvfrom(8096)
+                while time.time() < end:
+                    try:
+                        message, address = rs.recvfrom(8096)
 
-                    added = self.add(message, address)
+                        added = self.add(message, address)
 
-                    if added:
-                        logger.debug(
-                            '<-o   Response Packet({0})'.
-                            format(binascii.hexlify(message))
-                        )
-                    elif added is False:
-                        logger.debug(
-                            '<-o   Response Packet(Duplicate)'
-                        )
-                    elif added is None:
-                        logger.debug(
-                            '<-o   INVALID RESPONSE({0})'.
-                            format(binascii.hexlify(message))
-                        )
-                except socket.timeout:
-                    pass
-                except Exception:
-                    traceback.print_exc()
+                        if added:
+                            logger.debug(
+                                '<-o   Response Packet({0})'.
+                                format(binascii.hexlify(message))
+                            )
+                        elif added is False:
+                            logger.debug(
+                                '<-o   Response Packet(Duplicate)'
+                            )
+                        elif added is None:
+                            logger.debug(
+                                '<-o   INVALID RESPONSE({0})'.
+                                format(binascii.hexlify(message))
+                            )
+                    except socket.timeout:
+                        pass
+                    except Exception:
+                        traceback.print_exc()
 
-            for d in self.tablos:
-                d.check()
+                for d in self.tablos:
+                    d.check()
+            except OSError as e:
+                logger.error(e)
 
     def createDevice(self, packet, address):
         data = {}
