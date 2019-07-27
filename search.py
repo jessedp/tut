@@ -123,6 +123,13 @@ def search(args):
     if not results:
         # TODO: print the criteria we tried to match
         print(f'No matching records found.')
+    elif args.id_list:
+        id_set = []
+        for item in results:
+            id = item['data']['object_id']
+            if id not in id_set:
+                id_set.append(id)
+        print(id_set)
     else:
         returned = 0
         for item in results:

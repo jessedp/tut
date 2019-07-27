@@ -90,8 +90,11 @@ def main():
         sp_search.add_argument('--tms-id',
                                help='select by TMS Id (probably unique)')
         sp_search.add_argument('--id', type=int,
-                               help='select by Tablo Object Id '
+                               help='select by Tablo Object Id'
                                     '(definitely unique)')
+        sp_search.add_argument('-I', '--id-list', action='store_true',
+                               help='returns a list of only Tablo Object Ids '
+                                    '(overrides --full and any other output')
 
         sp_search.set_defaults(func=search_default)
 
@@ -141,13 +144,13 @@ def main():
                 sp_lib.print_help(sys.stderr)
 
             return EXIT_CODE_OK
-
+        print(args)
         if args.command == 'search':
             if not (args.after or args.before or args.full
                     or args.state or args.term or args.type
                     or args.limit or args.watched
                     or args.episode or args.season
-                    or args.tms_id or args.id
+                    or args.tms_id or args.id or args.id_list
                     or search_unknown(unknown)
                     ):
                 sp_search.print_help(sys.stderr)
