@@ -1,14 +1,17 @@
 import os
 import pprint
 import re
+import math
 import logging
 
-from config import built_ins, MAX_BATCH
 from tinydb import TinyDB, Query
+from tqdm import tqdm
+
+from config import built_ins, MAX_BATCH
+from util import chunks
 from tablo.api import Api
 from tablo.entities.show import Show
 from recording import Recording
-from util import chunks
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +72,7 @@ def print_stats():
 
 def build():
     print("Building library. NO videos are being fetched.")
+    print("-"*50)
 
     Api.discover()
     connected = Api.selectDevice()
@@ -132,41 +136,48 @@ def _build_recordings():
 
     recs_db = TinyDB(recs_path)
 
-    print('Loading All Recording Data')
     programs = Api.recordings.airings.get()
     show_paths = []
     print(f"Total Recordings: {len(programs)}")
-    cnt = 0
-    for piece in chunks(programs, MAX_BATCH):
-        airings = Api.batch.post(piece)
-        cnt += len(airings)
-        print(f"\tchunk: {cnt}/{len(programs)}")
-        for path, data in airings.items():
-            airing = Recording(data)
+    # cnt = 0
+    with tqdm(total=len(programs)) as pbar:
+        for piece in chunks(programs, MAX_BATCH):
+            airings = Api.batch.post(piece)
+            # cnt += len(airings)
+            # print(f"\tchunk: {cnt}/{len(programs)}")
+            for path, data in airings.items():
+                airing = Recording(data)
 
-            if airing.showPath not in show_paths:
-                show_paths.append(airing.showPath)
+                if airing.showPath not in show_paths:
+                    show_paths.append(airing.showPath)
 
-            if not built_ins['dry_run']:
-                recs_db.insert({
-                    'id': airing.object_id,
-                    'path': airing.path,
-                    'show_path': airing.showPath,
-                    'data': airing.data
-                })
+                if not built_ins['dry_run']:
+                    recs_db.insert({
+                        'id': airing.object_id,
+                        'path': airing.path,
+                        'show_path': airing.showPath,
+                        'data': airing.data
+                    })
+                pbar.update(1)
 
     recshow_db = TinyDB(recshow_path)
     print(f"Total Recorded Shows: {len(show_paths)}")
     my_show = Query()
-    for piece in chunks(show_paths, MAX_BATCH):
-        airing_shows = Api.batch.post(piece)
-        for path, data in airing_shows.items():
-            stuff = recshow_db.search(my_show.show_path == path)
-            if not stuff:
-                if not built_ins['dry_run']:
-                    recshow_db.insert({
-                        'id': data['object_id'],
-                        'show_path': path,
-                        'data': data
-                    })
+    with tqdm(total=len(show_paths)) as pbar:
+        # this is silly and just to make the progress bar move :/
+        for piece in chunks(show_paths, math.ceil(MAX_BATCH/5)):
+            # not caring about progress, we'd use this:
+            # for piece in chunks(show_paths, MAX_BATCH):
+            airing_shows = Api.batch.post(piece)
+            for path, data in airing_shows.items():
+                stuff = recshow_db.search(my_show.show_path == path)
+                pbar.update(1)
+                if not stuff:
+                    if not built_ins['dry_run']:
+                        recshow_db.insert({
+                            'id': data['object_id'],
+                            'show_path': path,
+                            'data': data
+                        })
+
     print("Done!")
