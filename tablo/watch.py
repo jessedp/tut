@@ -5,6 +5,7 @@ import m3u8
 import requests
 
 from .apiexception import APIError
+from .api import Api
 from .util import logger
 
 WATCH_ERROR_MESSAGES = {
@@ -22,14 +23,13 @@ class Watch(object):
     """
 
     def __init__(self, api, path=None):
-        self.Api = api
         self.error = None
         self.data = []
         if path is None:
             self.error = "No path"
         else:
             try:
-                self.data = self.Api(path).watch.post()
+                self.data = Api(path).watch.post()
                 self.error = None
                 self.errorDisplay = ''
             except APIError as e:
@@ -50,7 +50,8 @@ class Watch(object):
         self.originalPlaylistUrl = None
         self.bifSD = self.data.get('bif_url_sd')
         self.bifHD = self.data.get('bif_url_hd')
-        self.expires = self.data.get('playlist_url')
+        self.playlist_url = self.data.get('playlist_url')
+        self.expires = self.data.get('exires')
         self.token = self.data.get('token')
         if 'video_details' in self.data:
             self.width = self.data['video_details']['width']
@@ -61,16 +62,11 @@ class Watch(object):
         self._playlist = None
 
     def dump_info(self):
-        logger.debug("Watch [DATA]")
-        logger.debug('\n\t'.
+        print("Watch [DATA]")
+        print('\n\t'.
                      join("%s: %s" % item for item in self.data.items()))
-        # logger.debug('[M3U8]\n\t'+pickle.dumps(self.m3u8).)
-        logger.debug('Watch [M3U8]')
-        logger.debug(self.m3u8.dumps())
-        # tmp = self.Api(self.data['playlist_url'])
-        # logger.debug(pickle.dumps(self.getPlaylistURL(self.data['playlist_url'])))
-        # logger.debug(pickle.dumps(self.m3u8.playlists))
-        # logger.debug(self.getSegmentedPlaylist().dumps())
+        print('Watch [M3U8]')
+        print(self.m3u8.dumps())
 
     def dl_video(self):
         (
