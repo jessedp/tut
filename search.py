@@ -40,7 +40,7 @@ def search(args):
     if args.before:
         params.append(
             shows_qry.airing_details.datetime.test(
-                datetime_comp, '<', args.after)
+                datetime_comp, '<', args.before)
         )
     # Handle recording state args
     if args.state:
@@ -121,19 +121,20 @@ def search(args):
         results = rec_db.search(query)
 
     if not results:
-        # TODO: print the criteria we tried to match
-        print(f'No matching records found.')
-    elif args.id_list:
-        id_set = []
-        for item in results:
-            id = item['data']['object_id']
-            if id not in id_set:
-                id_set.append(id)
-        print(id_set)
+        if args.id_list:
+            print([])
+        else:
+            # TODO: print the criteria we tried to match
+            print(f'No matching records found.')
     else:
+        id_set = []
         returned = 0
         for item in results:
-            if args.full:
+            if args.id_list:
+                id = item['data']['object_id']
+                if id not in id_set:
+                    id_set.append(id)
+            elif args.full:
                 pprint(item)
             else:
                 Recording(item['data']).print()
@@ -141,8 +142,10 @@ def search(args):
             returned += 1
             if args.limit and returned == args.limit:
                 break
-
-        if returned == len(results):
-            print(f'Total recordings found: {len(results)}')
-        else:
-            print(f'{returned}/{len(results)} total recordings displayed')
+        if args.id_list:
+            print(id_set)
+        else :
+            if returned == len(results):
+                print(f'Total recordings found: {len(results)}')
+            else:
+                print(f'{returned}/{len(results)} total recordings displayed')
