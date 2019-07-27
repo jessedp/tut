@@ -17,14 +17,11 @@ class Recording(Airing):
             error = self.video_details['error']['code'] \
                 + ' - ' + self.video_details['error']['details']
 
-        top_line = convert_datestr(self.airing_details['datetime']) + " - " \
-            + f"{self.airing_details['show_title']}" \
-            + f" - {self.get_title()}\n"
         if self.type == 'episode':
             # TODO: type as an indicator (M) == movie (S) == series/episode ?
             # TODO: (earlier) levels of display (normally -vvv)
             print(
-                f"{top_line}"
+                f"{self.get_description()}"
                 f"{sep}{self.episode['description']}\n"
                 f"{sep}Season: {self.get_epsiode_num()}"
                 f"  Status: {self.video_details['state']}"
@@ -49,6 +46,12 @@ class Recording(Airing):
         print(sep*2 + self.get_out_path())
         print()
 
+    def get_description(self):
+        output = convert_datestr(self.airing_details['datetime']) + " - " \
+            + f"{self.airing_details['show_title']}" \
+            + f" - {self.get_title()}"
+        return output
+
     def get_title(self, for_print=True):
         if not self.type == 'episode':
             return ""
@@ -67,7 +70,7 @@ class Recording(Airing):
         return "s{:02}".format(self.episode['season_number']) + \
             'e{:02}'.format(self.episode['number'])
 
-    def get_out_path(self):
+    def get_out_path(self, ext="EXT"):
         if self.type == 'episode':
             title = self.airing_details['show_title']
             out = config.get('Output Locations', 'TV') + '/'
@@ -76,11 +79,11 @@ class Recording(Airing):
             out += title + \
                 ' - s{:02}'.format(self.episode['season_number']) + \
                 'e{:02}'.format(self.episode['number'])
-            return out + ".EXT"
+            return out + "." + ext
         elif self.type == 'movie':
             out = config.get('Output Locations', 'Movies') + '/'
             out += f"{self.airing_details['show_title']}"
             out += f" - {self.movie_airing['release_year']}"
-            return out+".EXT"
+            return out+"." + ext
         else:
             return f"{self.type } is UNDEFINED"
