@@ -144,7 +144,7 @@ def search(args):
                 break
         if args.id_list:
             print(id_set)
-        else :
+        else:
             if returned == len(results):
                 print(f'Total recordings found: {len(results)}')
             else:
