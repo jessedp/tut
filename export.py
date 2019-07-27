@@ -19,10 +19,14 @@ logger = logging.getLogger(__name__)
 
 
 def copy(id_list, args):
-    if len(id_list) == 1:
-        print(f"Processing {len(id_list)} recording")
+    total = len(id_list)
+    if total == 0:
+        print(f"Nothing to process, exiting...")
+        return
+    elif total == 1:
+        print(f"Processing {total} recording")
     else:
-        print(f"Processing {len(id_list)} recordings")
+        print(f"Processing {total} recordings")
     print("-"*50)
     for id in id_list:
         # TODO: put a X of Y somewhere near here
@@ -38,8 +42,17 @@ def _copy(id, args):
     shows = Query()
     # shortcut for later
     shows_qry = shows.data
-
-    obj = rec_db.get(shows_qry.object_id == int(id))
+    # TODO: deal with pieces of the same recording (TMSID?) marked "finished"
+    #      ie, 2 portions (non-full) of the an episode
+    #        + just skip them (do this!)
+    #        + differentiate on recorded at the same time
+    #           - look at recording/show data to see what it *should* be?
+    #        - overwrite previous portions
+    obj = rec_db.get(
+        (shows_qry.object_id == int(id))
+        &
+        (shows_qry.video_details.state == 'finished')
+    )
     if obj is None:
         print(
             f'ERROR: Unable to load record with object_id == "{id}", '
@@ -64,20 +77,26 @@ def _copy(id, args):
     total_duration = float(ffmpeg.probe(
         watch.playlist_url)['format']['duration'])
 
-    with show_progress(total_duration) as socket_filename:
-        try:
-            (
-                ffmpeg
-                # this is a m3u8 playlist
-                .input(watch.playlist_url)
-                .output(out_file, codec='copy', threads='auto',
-                        preset='ultrafast', loglevel='info')
-                .global_args('-progress', 'unix://{}'.format(socket_filename))
-                .overwrite_output()
-                .run(capture_stdout=True, capture_stderr=True)
-            )
-        except ffmpeg.Error as e:
-            logger.error(e)
+    if built_ins['dry_run']:
+        print("DRY RUN: The recording wasn't saved.")
+    else:
+        with show_progress(total_duration) as socket_filename:
+            try:
+                (
+                    ffmpeg
+                    # this is a m3u8 playlist
+                    .input(watch.playlist_url)
+                    .output(out_file, codec='copy', threads='auto',
+                            preset='ultrafast', loglevel='info')
+                    .global_args('-progress', 'unix://{}'.format(socket_filename))
+                    .overwrite_output()
+                    .run(capture_stdout=True, capture_stderr=True)
+                )
+            except KeyboardInterrupt:
+                os.remove(out_file)
+                raise KeyboardInterrupt
+            except ffmpeg.Error as e:
+                logger.error(e)
 
 
 # TODO: all of this should probably be somewhere else...
