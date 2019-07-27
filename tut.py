@@ -1,15 +1,21 @@
 #!/usr/bin/env python
+# gross, but do this before anything (including other modules) are loaded
+import gevent.monkey  # noqa
+gevent.monkey.patch_all(thread=False)  # noqa
 
-import sys
-import logging
 from dateutil.parser import parse
+import logging
+from ast import literal_eval
+import sys
+
+import export
+import search
+import library
+import config
 import argparse
 
-import config
-import library
-import search
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 EXIT_CODE_OK = 0
 EXIT_CODE_ERROR = 1
@@ -96,7 +102,16 @@ def main():
                                help='returns a list of only Tablo Object Ids '
                                     '(overrides --full and any other output')
 
-        sp_search.set_defaults(func=search_default)
+        # "copy" cmd parser
+        sp_copy = subparsers.add_parser('copy',
+                                        help='copy recordings somewhere')
+        sp_copy.add_argument('--infile', nargs='?',
+                             type=argparse.FileType('r'),
+                             help="file with list of ids to use",
+                             default=sys.stdin)
+
+        sp_copy.add_argument('--test', type=int,
+                             help='test')
 
         # args = parser.parse_args()
         args, unknown = parser.parse_known_args()
@@ -114,6 +129,7 @@ def main():
         else:
             log_level = logging.CRITICAL
 
+        config.built_ins['log_level'] = log_level
         config.setup_logger(log_level)
 
         config.built_ins['dry_run'] = args.dry_run
@@ -144,7 +160,7 @@ def main():
                 sp_lib.print_help(sys.stderr)
 
             return EXIT_CODE_OK
-        print(args)
+
         if args.command == 'search':
             if not (args.after or args.before or args.full
                     or args.state or args.term or args.type
@@ -165,6 +181,15 @@ def main():
 
             return EXIT_CODE_OK
 
+        if args.command == 'copy':
+            data = args.infile.readline()
+            try:
+                id_list = check_input(data)
+            except ValueError:
+                return EXIT_CODE_ERROR
+            export.copy(id_list, args)
+            return EXIT_CODE_OK
+
     except KeyboardInterrupt:
         return EXIT_CODE_ERROR  # pragma: no cover
 
@@ -180,6 +205,33 @@ def search_unknown(str):
         return True
 
 
+def check_input(data):
+    try:
+        id_list = literal_eval(data)
+    except (ValueError, SyntaxError):
+        if data.rstrip() == "":
+            print("No data provided")
+        else:
+            print(f'"{data}" is not a valid List')
+        raise ValueError
+
+    if type(id_list) is not list:
+        print(f'"{id_list}" is not a valid List')
+        raise ValueError
+
+    errs = []
+    for i in id_list:
+        if type(i) is not int:
+            errs.append(f'"{i}" is not an integer')
+
+    if len(errs) != 0:
+        for e in errs:
+            print(e)
+            raise ValueError
+
+    return id_list
+
+
 def valid_date(s):
     try:
         return parse(s)
@@ -188,11 +240,7 @@ def valid_date(s):
         raise argparse.ArgumentTypeError(msg)
 
 
-def search_default(x):
-    print("default!!")
-    print(x)
-
-
 if __name__ == '__main__':
-
-    sys.exit(main())
+    code = main()
+    sys.stderr.close()
+    sys.exit(code)
