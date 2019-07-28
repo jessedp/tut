@@ -62,6 +62,10 @@ def _copy(id, args):
     rec = Recording(obj['data'])
 
     watch = rec.watch()
+    if watch.error is not None:
+        print(rec.get_description())
+        print("ERROR: Recording no longer exists, skipping!")
+        return
     out_file = rec.get_out_path('mp4')
 
     os.makedirs(os.path.dirname(out_file), exist_ok=True)
