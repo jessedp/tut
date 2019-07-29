@@ -92,7 +92,9 @@ def _copy(id, args):
                     .input(watch.playlist_url)
                     .output(out_file, codec='copy', threads='auto',
                             preset='ultrafast', loglevel='info')
-                    .global_args('-progress', 'unix://{}'.format(socket_filename))
+                    .global_args(
+                        '-progress', 'unix://{}'.format(socket_filename)
+                    )
                     .overwrite_output()
                     .run(capture_stdout=True, capture_stderr=True)
                 )
