@@ -27,6 +27,12 @@ def search(args):
             shows_qry.episode.description.matches(
                 f'.*{args.term}.*', flags=re.IGNORECASE
             )
+            # Gah, should work, always bombs. Suspect on non-episodes
+            # though episode.description is fine?
+            # |
+            # shows_qry.episode['title'].matches(
+            #     f'.*{args.term}.*', flags=re.IGNORECASE
+            # )
         )
 
     # Handle "after" date arg
