@@ -1,7 +1,9 @@
 import socket
 import struct
 import array
+import logging
 
+logger = logging.getLogger(__name__)
 
 class Interface:
     def __init__(self):
@@ -19,24 +21,32 @@ class Interface:
 
 
 def getInterfaces():
+    found_ifs = []
     try:
-        return _getInterfaces()
+        for i in _getInterfaces():
+            found_ifs.append(i)
     except:
         pass
 
     try:
-        return _getInterfacesBSD()
+        for i in _getInterfacesBSD():
+            found_ifs.append(i)
+
     except:
         pass
 
     try:
-        return _getInterfacesWin()
+        for i in _getInterfacesWin():
+            found_ifs.append(i)
+
     except:
         pass
 
+    # Just in case
     i = Interface()
     i.name = 'FALLBACK'
-    return [i]
+    found_ifs.append(i)
+    return found_ifs
 
 
 def _getInterfaces():
@@ -50,7 +60,10 @@ def _getInterfaces():
             mask = getSubnetMask(i.name)
             i.mask = mask
         except:
-            i.mask = ''
+            logger.debug(name + " -  no netmask found; unusable")
+            # raise Exception("no mask found")
+
+            i.mask = None
         interfaces.append(i)
     return interfaces
 
@@ -88,7 +101,7 @@ def _getInterfacesWin():
 
 def all_interfaces():
     import sys
-    #import array
+    # import array
     import fcntl
 
     is_64bits = sys.maxsize > 2**32
@@ -119,7 +132,11 @@ def all_interfaces():
 
 def getSubnetMask(name):
     import fcntl
-    return socket.inet_ntoa(fcntl.ioctl(socket.socket(socket.AF_INET, socket.SOCK_DGRAM), 35099, struct.pack('256s', name))[20:24])
+    mask = socket.inet_ntoa(
+        fcntl.ioctl(socket.socket(socket.AF_INET, socket.SOCK_DGRAM),
+                    35099, struct.pack('256s', name))[20:24])
+    print(f"getSubnetMask: mask = {mask}")
+    return mask
 
 
 def calcIPValue(ipaddr):
