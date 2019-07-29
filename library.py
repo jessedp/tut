@@ -3,6 +3,7 @@ import pprint
 import re
 import math
 import logging
+import datetime
 
 from tinydb import TinyDB, Query
 from tqdm import tqdm
@@ -34,9 +35,13 @@ def print_stats():
     shows = Query()
     shows_qry = shows.data
 
+    t = os.path.getmtime(path)
+    mod_disp = datetime.datetime.fromtimestamp(t).strftime('%c')
+
     field_title = '{:17}'
     print("Overview")
     print("-" * 50)
+    print(f"Built: {mod_disp}")
 
     cnt = len(rec_db.all())
     print('{:10}'.format("Total Recordings") + ": " + f'{cnt}')
