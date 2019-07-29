@@ -5,9 +5,10 @@ import struct
 import time
 import datetime
 import requests
+import logging
 from .util import print_dict
-from .util import logger
 
+logger = logging.getLogger(__name__)
 
 DEVICE_DISCOVERY_PORT = 8881
 DEVICE_REPLY_PORT = 8882
@@ -123,25 +124,37 @@ class Devices(object):
 
     def discover(self, device=None):
         from . import netif
+        logger.debug("Looking for Networks interfaces")
         ifaces = netif.getInterfaces()
         sockets = []
 
+        logger.debug("Checking interfaces")
+        # try to create a bunch of sockets
         for i in ifaces:
             if not i.broadcast:
+                logger.debug(f"Unusable, NO BROADCAST - if: {i.name}  "
+                             f"ip: {i.ip} mask: {i.mask}  "
+                             f"bcast: {i.broadcast}")
                 continue
-            # if i.ip.startswith('127.'): continue
-            logger.debug("if: " + i.name)
+            if i.mask is None:
+                logger.debug(f"Unusable, NO MASK - if: {i.name}  ip: {i.ip} "
+                             f"mask: {i.mask}  bcast: {i.broadcast}")
+                continue
+            if i.ip.startswith('127.'):
+                logger.debug('Unusable, localhost')
+                continue
+            logger.debug(f"Usable - if: {i.name}  ip: {i.ip} mask: {i.mask}  bcast: {i.broadcast}")
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.settimeout(0.01)  # 10ms
             s.bind((i.ip, 0))
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             sockets.append((s, i))
+
         packet = struct.pack('>4s', 'BnGr'.encode())
 
         logger.debug(
             '  o-> Broadcast Packet({0})'.format(binascii.hexlify(packet))
         )
-
         for attempt in (0, 1):
             for s, i in sockets:
                 logger.debug(
@@ -189,7 +202,8 @@ class Devices(object):
                 for d in self.tablos:
                     d.check()
             except OSError as e:
-                logger.error(e)
+                logger.error(f"OSError {e}")
+                pass
 
     def createDevice(self, packet, address):
         data = {}
