@@ -30,7 +30,8 @@ def main():
         parser._positionals.title = "Available commands"
 
         parser.add_argument('-v', '--verbose', action='count', default=0,
-                            help="amount of program detail to output")
+                            help="amount of detail to display add vs (-vvvv) "
+                                 "for maximum amount")
         parser.add_argument('--dry-run', action='store_true',
                             help="show what would happen, "
                                  "but don't change anything")
