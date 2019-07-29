@@ -3,20 +3,17 @@ import pytz
 import traceback
 
 from tablo import compat
-# from tablo.api import Api
 
 # TODO: remove this completely!
 LOG_LEVEL = logging.DEBUG
 logger = logging.getLogger(__name__)
 
 
-
-
 def UTCNow():
     return compat.datetime.datetime.now(pytz.timezone('UTC'))
 
 
-# TODO: move processDate elsewher (tablo.api?)
+# TODO: move processDate elsewhere (tablo.api?)
 def processDate(date, format_='%Y-%m-%dT%H:%M'):
     if not date:
         return None

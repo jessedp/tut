@@ -179,21 +179,21 @@ class Airing(object):
         )
 
     def secondsToEnd(self, start=None):
-        start = start or now()
+        start = start or Api.now()
         return compat.timedelta_total_seconds(self.datetimeEnd - start)
 
     def secondsToStart(self):
-        return compat.timedelta_total_seconds(self.datetime - now())
+        return compat.timedelta_total_seconds(self.datetime - Api.now())
 
     def secondsSinceEnd(self):
-        return compat.timedelta_total_seconds(now() - self.datetimeEnd)
+        return compat.timedelta_total_seconds(Api.now() - self.datetimeEnd)
 
     def airingNow(self, ref=None):
-        ref = ref or now()
+        ref = ref or Api.now()
         return self.datetime <= ref < self.datetimeEnd
 
     def ended(self):
-        return self.datetimeEnd < now()
+        return self.datetimeEnd < Api.now()
 
     @property
     def network(self):

@@ -1,12 +1,10 @@
 from urllib.parse import urlparse
-import pickle
 import ffmpeg
 import m3u8
 import requests
 
 from .apiexception import APIError
 from .api import Api
-from .util import logger
 
 WATCH_ERROR_MESSAGES = {
     'disk_unavailable': 'No Hard Drive Connected',
@@ -63,8 +61,7 @@ class Watch(object):
 
     def dump_info(self):
         print("Watch [DATA]")
-        print('\n\t'.
-                     join("%s: %s" % item for item in self.data.items()))
+        print('\n\t' . join("%s: %s" % item for item in self.data.items()))
         print('Watch [M3U8]')
         print(self.m3u8.dumps())
 
@@ -89,7 +86,6 @@ class Watch(object):
         )
         text = requests.get(url).text
         self.m3u8 = m3u8.loads(text)
-        logger.debug(pickle.dumps(self.m3u8.playlists))
         self.url = '{0}://{1}{2}'.format(
             p.scheme,
             p.netloc,

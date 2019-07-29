@@ -10,8 +10,6 @@ from . import discovery
 from tablo.endpoint import Endpoint
 from tablo.apiexception import APIError
 from . import compat
-# from .entities.airing import Airing
-# from .watch import Watch
 
 logger = logging.getLogger(__name__)
 
@@ -161,8 +159,8 @@ class TabloAPI(Endpoint):
 
         return None
 
-    #originally from tablo.utils
-    def now():
+    # originally from tablo.util
+    def now(self):
         return compat.datetime.datetime.now(self.timezone)
 
 
