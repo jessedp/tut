@@ -118,7 +118,8 @@ def _build_guide():
                     guide_db.insert({
                         'id': show.object_id,
                         'path': show.path,
-                        'data': show.data
+                        'data': show.data,
+                        'version': Api.device.version
                     })
 
 
@@ -157,7 +158,8 @@ def _build_recordings():
                         'id': airing.object_id,
                         'path': airing.path,
                         'show_path': airing.showPath,
-                        'data': airing.data
+                        'data': airing.data,
+                        'version': Api.device.version
                     })
                 pbar.update(1)
 
@@ -178,7 +180,8 @@ def _build_recordings():
                         recshow_db.insert({
                             'id': data['object_id'],
                             'show_path': path,
-                            'data': data
+                            'data': data,
+                            'version': Api.device.version
                         })
 
     print("Done!")
