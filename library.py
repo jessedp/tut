@@ -90,8 +90,9 @@ def print_stats():
             ' -  {:>2}'.format(shows[key]['cnt'])
         )
 
-# toss a/an/the, force non-letters to end
+
 def _sortableTitle(title):
+    # toss a/an/the, force non-letters to end
     articles = ['a', 'an', 'the']
     word = title.split(' ', 1)[0].lower()
     sort_title = title
