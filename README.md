@@ -3,7 +3,11 @@
 [Tablo](https://www.tablotv.com/). Mostly just retrieving recordings and their associated data. It aims to be easily usable with no configuration 
 out-of-the-box. One would likely, of course, do additional configuration later.
 
-It is written for python 3.  
+It is written for python 3.
+
+Tested against Tablo firmware:
+* v.2.2.26
+   
 
 
 ### Installation
@@ -96,6 +100,10 @@ All recordings with "colbert" the title or description:
 
 `./tut.py search colbert`   
 
+or:
+
+`./tut.py search --term colbert`
+
 Or limit that to only recordings after a specific date:
 
 `./tut.py search colbert --after 2019-07-19`
@@ -122,3 +130,4 @@ Return all the Movies, but dump the full data record:
  * [the code for the Kodi add-on](https://github.com/Nuvyyo/script.tablo) from the Nuvyyo folks. You'll find the slightly modified version of it  `tablo` module.
  
  * [TinyDB](https://github.com/msiemens/tinydb)
+ 
