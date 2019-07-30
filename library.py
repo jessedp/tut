@@ -72,8 +72,10 @@ def print_stats():
     print("By Show")
     print("-" * 50)
     shows = {}
+    max_width = 0
     for item in rec_db.all():
         title = item['data']['airing_details']['show_title']
+        max_width = max(max_width, len(title))
         key = _sortableTitle(title)
 
         if key not in shows.keys():
@@ -82,8 +84,11 @@ def print_stats():
             shows[key]['cnt'] += 1
 
     for key in sorted(shows.keys()):
-        print(f"{shows[key]['title']} - {shows[key]['cnt']}")
-
+        # print(f"{shows[key]['title']} - {shows[key]['cnt']}")
+        print(
+            ('{:' + str(max_width) + '}').format(shows[key]['title']) +
+            ' -  {:>2}'.format(shows[key]['cnt'])
+        )
 
 # toss a/an/the, force non-letters to end
 def _sortableTitle(title):
