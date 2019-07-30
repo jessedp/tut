@@ -8,7 +8,6 @@ import logging.config
 from tzlocal import get_localzone
 from pytz import timezone
 from pytz.exceptions import UnknownTimeZoneError
-
 from tablo.api import Api
 
 logger = logging.getLogger(__name__)
@@ -110,7 +109,6 @@ def discover(display=True):
             device.dump_info()
             Api.selectDevice(device.ID)
             if display:
-                print(f'timezone: {Api.timezone}')
                 print('srvInfo: ')
                 print_dict(Api.serverInfo)
                 print('subscription:')

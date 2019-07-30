@@ -1,3 +1,5 @@
+import os
+import datetime
 from dateutil.parser import parse
 from pytz import timezone
 
@@ -17,6 +19,12 @@ def convert_datestr(str, fmt='%m/%d/%Y %H:%M'):
     tz = config.get('General', 'Timezone')
     out = x.astimezone(timezone(tz)).strftime(fmt)
     return out
+
+
+def file_time_str(path):
+    t = os.path.getmtime(path)
+    disp = datetime.datetime.fromtimestamp(t).strftime('%c')
+    return disp
 
 
 def datetime_comp(val, op, test_val):

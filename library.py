@@ -3,13 +3,12 @@ import pprint
 import re
 import math
 import logging
-import datetime
 
 from tinydb import TinyDB, Query
 from tqdm import tqdm
 
 from config import built_ins, MAX_BATCH
-from util import chunks
+from util import chunks, file_time_str
 from tablo.api import Api
 from tablo.entities.show import Show
 from recording import Recording
@@ -35,13 +34,10 @@ def print_stats():
     shows = Query()
     shows_qry = shows.data
 
-    t = os.path.getmtime(path)
-    mod_disp = datetime.datetime.fromtimestamp(t).strftime('%c')
-
     field_title = '{:17}'
     print("Overview")
     print("-" * 50)
-    print(f"Built: {mod_disp}")
+    print(f"Built: {file_time_str(path)}")
 
     cnt = len(rec_db.all())
     print('{:10}'.format("Total Recordings") + ": " + f'{cnt}')
