@@ -67,7 +67,7 @@ def _copy(id, args):
         print("ERROR: Recording no longer exists, skipping!")
         return
     out_file = rec.get_out_path('mp4')
-
+    # TODO: this could make weird dirs?
     os.makedirs(os.path.dirname(out_file), exist_ok=True)
 
     # Display what we're working on
@@ -78,26 +78,33 @@ def _copy(id, args):
         print(rec.get_description())
         print(" " * 2 + f"writing to: {out_file}")
 
+    if not args.clobber and os.path.exists(out_file):
+        print("File exists, skipping")
+        return
+
     total_duration = float(ffmpeg.probe(
         watch.playlist_url)['format']['duration'])
 
     if built_ins['dry_run']:
+        # maybe do a dry run writing to a temp path and deleting so the time
+        # is roughly the same?
         print("DRY RUN: The recording wasn't saved.")
     else:
         with show_progress(total_duration) as socket_filename:
             try:
-                (
+                copier = (
                     ffmpeg
                     # this is a m3u8 playlist
                     .input(watch.playlist_url)
-                    .output(out_file, codec='copy', threads='auto',
+                    .output(out_file, codec='copy',
                             preset='ultrafast', loglevel='info')
+                    .overwrite_output()
                     .global_args(
                         '-progress', 'unix://{}'.format(socket_filename)
                     )
-                    .overwrite_output()
-                    .run(capture_stdout=True, capture_stderr=True)
                 )
+
+                copier.run(capture_stdout=True, capture_stderr=True)
             except KeyboardInterrupt:
                 os.remove(out_file)
                 raise KeyboardInterrupt
