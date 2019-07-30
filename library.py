@@ -67,8 +67,39 @@ def print_stats():
         shows.path.matches(f'.*programs.*', flags=re.IGNORECASE)
     )
     print(field_title.format("Programs") + ": " + f'{cnt}')
-
     print()
+
+    print("By Show")
+    print("-" * 50)
+    shows = {}
+    for item in rec_db.all():
+        title = item['data']['airing_details']['show_title']
+        key = _sortableTitle(title)
+
+        if key not in shows.keys():
+            shows[key] = {'cnt': 1, 'title': title}
+        else:
+            shows[key]['cnt'] += 1
+
+    for key in sorted(shows.keys()):
+        print(f"{shows[key]['title']} - {shows[key]['cnt']}")
+
+
+# toss a/an/the, force non-letters to end
+def _sortableTitle(title):
+    articles = ['a', 'an', 'the']
+    word = title.split(' ', 1)[0].lower()
+    sort_title = title
+    if word in articles:
+        try:
+            sort_title = title.split(' ', 1)[1]
+        except Exception:
+            sort_title = title
+
+    if ord(sort_title[0]) not in range(ord('A'), ord('z') + 1):
+        sort_title = "ZZZZ" + sort_title
+
+    return sort_title
 
 
 def build():
