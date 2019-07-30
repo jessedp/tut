@@ -76,7 +76,7 @@ def print_stats():
     for item in rec_db.all():
         title = item['data']['airing_details']['show_title']
         max_width = max(max_width, len(title))
-        key = _sortableTitle(title)
+        key = _sortable_title(title)
 
         if key not in shows.keys():
             shows[key] = {'cnt': 1, 'title': title}
@@ -91,7 +91,7 @@ def print_stats():
         )
 
 
-def _sortableTitle(title):
+def _sortable_title(title):
     # toss a/an/the, force non-letters to end
     articles = ['a', 'an', 'the']
     word = title.split(' ', 1)[0].lower()
