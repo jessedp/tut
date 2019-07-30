@@ -143,7 +143,8 @@ class Devices(object):
             if i.ip.startswith('127.'):
                 logger.debug('Unusable, localhost')
                 continue
-            logger.debug(f"Usable - if: {i.name}  ip: {i.ip} mask: {i.mask}  bcast: {i.broadcast}")
+            logger.debug(f"Usable - if: {i.name}  ip: {i.ip} "
+                         f"mask: {i.mask}  bcast: {i.broadcast}")
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.settimeout(0.01)  # 10ms
             s.bind((i.ip, 0))
