@@ -111,8 +111,9 @@ def main():
                              help="file with list of ids to use",
                              default=sys.stdin)
 
-        sp_copy.add_argument('--test', type=int,
-                             help='test')
+        sp_copy.add_argument('--clobber', action='store_true',
+                             default=False,
+                             help='should we overwrite existing files?')
 
         # args = parser.parse_args()
         args, unknown = parser.parse_known_args()
@@ -187,6 +188,7 @@ def main():
             try:
                 id_list = check_input(data)
             except ValueError:
+                sp_copy.print_help(sys.stderr)
                 return EXIT_CODE_ERROR
             export.copy(id_list, args)
             return EXIT_CODE_OK
