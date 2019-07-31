@@ -105,7 +105,12 @@ def search(args):
         params.append(
             shows_qry.episode.tms_id == args.tms_id
         )
-
+    # Handle duration limit
+    if args.duration:
+        print(f"duration: {args.duration}")
+        params.append(
+            shows_qry.video_details.duration < args.duration
+        )
     # Handle tablo object id arg
     if args.id:
         params.append(

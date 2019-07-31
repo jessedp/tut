@@ -7,6 +7,7 @@ from dateutil.parser import parse
 import logging
 from ast import literal_eval
 import sys
+import re
 
 import export
 import search
@@ -94,6 +95,11 @@ def main():
                                choices=['episode', 'movie',
                                         'sport', 'programs'],
                                help='only include these recording types')
+        sp_search.add_argument('--duration',
+                               type=valid_duration,
+                               help="recordings less than this length "
+                                    "(28m, 10s, 1h) useful for culling bad "
+                                    "recordings")
         sp_search.add_argument('--watched', action='store_true',
                                help='only include watched recordings')
         sp_search.add_argument('--full', action='store_true',
@@ -173,6 +179,7 @@ def main():
                     or args.limit or args.watched
                     or args.episode or args.season
                     or args.tms_id or args.id or args.id_list
+                    or args.duration
                     or search_unknown(unknown)
                     ):
                 sp_search.print_help(sys.stderr)
@@ -247,7 +254,21 @@ def valid_date(s):
         raise argparse.ArgumentTypeError(msg)
 
 
+def valid_duration(s):
+    # doesn't deal with something like 28m5s or 27:40m
+    # eg. 1s => 1 , 1m => 60, 1h => 3600
+    parts = re.match('(\\d+)([hms]?)', s)
+    print(f"{parts[1]} - {parts[2]}")
+    if parts[2] == "" or parts[2] == "s":
+        return int(parts[1])
+    elif parts[2] == "m":
+        return int(parts[1]) * 60
+    elif parts[2] == "h":
+        return int(parts[1]) * 3600
+
+
 if __name__ == '__main__':
     code = main()
     sys.stderr.close()
+
     sys.exit(code)
