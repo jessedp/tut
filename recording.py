@@ -25,7 +25,7 @@ class Recording(Airing):
             proper_duration = self.airing_details['duration']
             actual_duration = self.video_details['duration']
             length = str(timedelta(seconds=actual_duration)) + " of " \
-                     + str(timedelta(seconds=proper_duration))
+                + str(timedelta(seconds=proper_duration))
 
             print(
                 f"{self.get_description()}\n"
