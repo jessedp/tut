@@ -58,7 +58,15 @@ class Recording(Airing):
         if for_print:
             title = self.episode['title']
             if not title or title == 'None':
-                return self.get_epsiode_num()
+                # This gem brought to you by Buzzr, Celebrity Name Game, and/or
+                # maybe TMSIDs that start with "SH"
+                if self.episode['season_number'] == 0 \
+                        and self.episode['number'] == 0:
+                    return self.airing_details['datetime']\
+                        .replace("-", "").replace(":", "")\
+                        .replace("T", "_").replace("Z", "")
+                else:
+                    return self.get_epsiode_num()
             # yuck - "105" = season 1 + episode 5
             if title == str(self.episode['season_number']) + \
                     '{:02}'.format(self.episode['number']):
