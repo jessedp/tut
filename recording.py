@@ -1,3 +1,4 @@
+from datetime import timedelta
 from tablo.entities.airing import Airing
 from util import convert_datestr
 from config import config
@@ -11,7 +12,7 @@ class Recording(Airing):
         # TODO: shorten desc
         # TODO: format statuses better
         # TODO: maybe shorten Desc
-        sep = '  '
+        sep = '\t'
         error = None
         if self.video_details['error']:
             error = self.video_details['error']['code'] \
@@ -20,18 +21,25 @@ class Recording(Airing):
         if self.type == 'episode':
             # TODO: type as an indicator (M) == movie (S) == series/episode ?
             # TODO: (earlier) levels of display (normally -vvv)
+            # TODO: put this duration display elsewhere? Here and library.py
+            proper_duration = self.airing_details['duration']
+            actual_duration = self.video_details['duration']
+            length = str(timedelta(seconds=actual_duration)) + " of " \
+                     + str(timedelta(seconds=proper_duration))
+
             print(
-                f"{self.get_description()}"
+                f"{self.get_description()}\n"
                 f"{sep}{self.episode['description']}\n"
                 f"{sep}Season: {self.get_epsiode_num()}"
                 f"  Status: {self.video_details['state']}"
                 f"  Watched: {self.user_info['watched']}\n"
+                f"{sep}Length: {length}\n"
                 f"{sep}Type: {self.type}"
                 f"  TMS ID: {self.episode['tms_id']}"
                 f"  Rec Object ID: {self.object_id}"
             )
             if error:
-                print(f"Error: {error}")
+                print(f"{sep}ERROR: {error}")
 
         elif self.type == 'movie':
             print(
