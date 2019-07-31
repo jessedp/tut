@@ -64,6 +64,10 @@ def main():
                             help='search library')
         sp_lib.add_argument('--full', action='store_true',
                             help='dump/display full record details')
+        sp_lib.add_argument('--dupes', '--duplicates', action='store_true',
+                            help='show what may be duplicate recordings '
+                                 "there's a good chance these are partial "
+                                 "recordings")
 
         # search cmd parser
         sp_search = subparsers.add_parser('search',
@@ -154,10 +158,10 @@ def main():
 
             elif args.view:
                 library.view(args.full)
-
             elif args.stats:
                 library.print_stats()
-
+            elif args.dupes:
+                library.print_dupes()
             else:
                 sp_lib.print_help(sys.stderr)
 

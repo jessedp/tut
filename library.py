@@ -2,6 +2,7 @@ import os
 import pprint
 import re
 import math
+from datetime import timedelta
 import logging
 
 from tinydb import TinyDB, Query
@@ -222,3 +223,32 @@ def _build_recordings():
                         })
 
     print("Done!")
+
+
+def print_dupes():
+    path = built_ins['db']['recordings']
+    rec_db = TinyDB(path)
+    dupes = {}
+    for item in rec_db.all():
+        data = item['data']
+
+        if 'episode' in data.keys():
+            tmsid = data['episode']['tms_id']
+            if tmsid not in dupes:
+                dupes[tmsid] = []
+                dupes[tmsid].append(data)
+            else:
+                dupes[tmsid].append(data)
+    for key, data in dupes.items():
+        if len(data) > 1:
+            print(key + " = " + str(len(data)))
+            for item in data:
+                rec = Recording(item)
+                proper_duration = rec.airing_details['duration']
+                actual_duration = rec.video_details['duration']
+                print("\t" + rec.get_description() + " - " +
+                      str(timedelta(seconds=actual_duration)) + " of " +
+                      str(timedelta(seconds=proper_duration))
+                      )
+
+            # print(len(dupes[key]['items']))
