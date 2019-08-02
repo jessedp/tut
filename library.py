@@ -1,8 +1,8 @@
 import os
-import pprint
 import re
 import math
-from datetime import timedelta
+
+import pprint
 import logging
 
 from tinydb import TinyDB, Query
@@ -11,6 +11,7 @@ from tqdm import tqdm
 from config import built_ins, MAX_BATCH
 from util import chunks, file_time_str
 from tablo.api import Api
+from tablo.apiexception import APIError
 from tablo.entities.show import Show
 from recording import Recording
 
@@ -244,11 +245,76 @@ def print_dupes():
             print(key + " = " + str(len(data)))
             for item in data:
                 rec = Recording(item)
-                proper_duration = rec.airing_details['duration']
-                actual_duration = rec.video_details['duration']
-                print("\t" + rec.get_description() + " - " +
-                      str(timedelta(seconds=actual_duration)) + " of " +
-                      str(timedelta(seconds=proper_duration))
-                      )
+                print("\t" + rec.get_description() + " - " + rec.get_dur())
 
-            # print(len(dupes[key]['items']))
+
+def delete(id_list, args):
+    # TODO: add a confirmation (sans --yyyyassss)
+    total = len(id_list)
+    if total == 0:
+        print(f"Nothing to delete, exiting...")
+        return
+
+    # Load all the recs
+    path = built_ins['db']['recordings']
+    rec_db = TinyDB(path)
+    shows = Query()
+    # shortcut for later
+    shows_qry = shows.data
+
+    recs = []
+    total = 0
+    for obj_id in id_list:
+        obj = rec_db.get(shows_qry.object_id == int(obj_id))
+        if obj['data']['video_details']['state'] == 'recording':
+            total = max((total-1), 0)
+        else:
+            total += 1
+            recs.append(
+                {
+                    'doc_id': obj.doc_id,
+                    'obj_id': obj_id,
+                    'rec': Recording(obj['data'])
+                })
+    # TODO: don't "total" like this
+    if total <= 0:
+        print("No recordings found.")
+        return
+    elif total == 1:
+        print(f"Deleting {total} recording...")
+    else:
+        print(f"Deleting {total} recordings...")
+
+    for rec in recs:
+        rec = rec['rec']
+        print(f" X {rec.get_description()} ({rec.get_actual_dur()})")
+
+    print("-" * 50)
+    if not args.yes:
+        print()
+        print('\tAdd the "--yes" flag to actually delete things...')
+        print()
+    else:
+        for rec in recs:
+            _delete(rec, rec_db)
+        print("FINSIHED")
+
+
+def _delete(rec, rec_db):
+    doc_id = rec['doc_id']
+    item = rec['rec']
+
+    print(f"Deleting: {item.get_description()} ({item.get_actual_dur()})")
+
+    if built_ins['dry_run']:
+        print("DRY RUN: would have deleted...")
+    else:
+        try:
+            # try to delete the full recording
+            item.delete()
+            # delete the local db record instead of REBUILDing everything
+            rec_db.remove(doc_ids=[doc_id])
+            print("\tDeleted!")
+        except APIError:
+            print("Recording no longer exists")
+            pass

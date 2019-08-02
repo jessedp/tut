@@ -3,18 +3,17 @@
 import gevent.monkey  # noqa
 gevent.monkey.patch_all(thread=False)  # noqa
 
-from dateutil.parser import parse
-import logging
-from ast import literal_eval
 import sys
 import re
+from ast import literal_eval
+from dateutil.parser import parse
+import logging
 
 import export
 import search
 import library
 import config
 import argparse
-
 
 VERSION = "0.0.2"
 
@@ -125,12 +124,26 @@ def main():
                              default=False,
                              help='should we overwrite existing files?')
 
+        # "delete" cmd parser
+        sp_delete = subparsers.add_parser('delete',
+                                          help='delete recordings from the '
+                                          'Tablo device')
+        sp_delete.add_argument('--infile', nargs='?',
+                               type=argparse.FileType('r'),
+                               help="file with list of ids to use",
+                               default=sys.stdin)
+
+        sp_delete.add_argument('--yes', '--yyaaassss', action='store_true',
+                               default=False,
+                               help='This must be set to actually delete '
+                                    'stuff')
+
         # args = parser.parse_args()
         args, unknown = parser.parse_known_args()
 
         if len(sys.argv) == 1:
             parser.print_help(sys.stderr)
-            sys.exit(1)
+            sys.exit(EXIT_CODE_ERROR)
 
         if args.verbose >= 3:
             log_level = logging.DEBUG
@@ -161,7 +174,6 @@ def main():
         if args.command == 'library':
             if args.build:
                 library.build()
-
             elif args.view:
                 library.view(args.full)
             elif args.stats:
@@ -195,6 +207,7 @@ def main():
             return EXIT_CODE_OK
 
         if args.command == 'copy':
+            print("Gathering data, [ENTER] to quit")
             data = args.infile.readline()
             try:
                 id_list = check_input(data)
@@ -202,6 +215,19 @@ def main():
                 sp_copy.print_help(sys.stderr)
                 return EXIT_CODE_ERROR
             export.copy(id_list, args)
+
+            return EXIT_CODE_OK
+
+        if args.command == 'delete':
+            print("Gathering data, [ENTER] to quit")
+            data = args.infile.readline().rstrip()
+            try:
+                id_list = check_input(data)
+            except ValueError:
+                sp_delete.print_help(sys.stderr)
+                return EXIT_CODE_ERROR
+            library.delete(id_list, args)
+
             return EXIT_CODE_OK
 
     except KeyboardInterrupt:
@@ -258,7 +284,6 @@ def valid_duration(s):
     # doesn't deal with something like 28m5s or 27:40m
     # eg. 1s => 1 , 1m => 60, 1h => 3600
     parts = re.match('(\\d+)([hms]?)', s)
-    print(f"{parts[1]} - {parts[2]}")
     if parts[2] == "" or parts[2] == "s":
         return int(parts[1])
     elif parts[2] == "m":
