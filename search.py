@@ -107,7 +107,6 @@ def search(args):
         )
     # Handle duration limit
     if args.duration:
-        print(f"duration: {args.duration}")
         params.append(
             shows_qry.video_details.duration < args.duration
         )
