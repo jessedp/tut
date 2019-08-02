@@ -58,16 +58,14 @@ def main():
                             help='build library')
         sp_lib.add_argument('-v', '--view', action='store_true',
                             help='view library')
-        # sp_lib.add_argument('-s', '--search',
-        #                     help='search library')
         sp_lib.add_argument('--stats', action='store_true',
                             help='search library')
         sp_lib.add_argument('--full', action='store_true',
                             help='dump/display full record details')
-        sp_lib.add_argument('--dupes', '--duplicates', action='store_true',
-                            help='show what may be duplicate recordings '
-                                 "there's a good chance these are partial "
-                                 "recordings")
+        sp_lib.add_argument('--dupes', action='store_true',
+                            help='show what may be duplicate recordings. '
+                                 "There's a good chance these are pieces of a "
+                                 "partial recording")
 
         # search cmd parser
         sp_search = subparsers.add_parser('search',
@@ -97,8 +95,8 @@ def main():
         sp_search.add_argument('--duration',
                                type=valid_duration,
                                help="recordings less than this length "
-                                    "(28m, 10s, 1h) useful for culling bad "
-                                    "recordings")
+                                    "(28m, 10s, 1h. etc) - useful for culling "
+                                    "bad recordings")
         sp_search.add_argument('--watched', action='store_true',
                                help='only include watched recordings')
         sp_search.add_argument('--full', action='store_true',
@@ -108,9 +106,10 @@ def main():
         sp_search.add_argument('--id', type=int,
                                help='select by Tablo Object Id'
                                     '(definitely unique)')
-        sp_search.add_argument('-I', '--id-list', action='store_true',
-                               help='returns a list of only Tablo Object Ids '
-                                    '(overrides --full and any other output')
+        sp_search.add_argument('-L', '--id-list', action='store_true',
+                               help='only output a list matching Object Ids - '
+                                    'Pipe this into other commands. '
+                                    '(overrides --full and any other output)')
 
         # "copy" cmd parser
         sp_copy = subparsers.add_parser('copy',

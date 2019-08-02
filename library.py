@@ -287,7 +287,7 @@ def delete(id_list, args):
 
     for rec in recs:
         rec = rec['rec']
-        print(f" X {rec.get_description()} ({rec.get_actual_dur()})")
+        print(f" - {rec.get_actual_dur()} | {rec.get_description()} ")
 
     print("-" * 50)
     if not args.yes:
