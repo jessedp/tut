@@ -1,13 +1,28 @@
-## Tut - Tablo User Tools
+# Tut - Tablo User Tools
 **Tut** lets you mess with your 
-[Tablo](https://www.tablotv.com/). Mostly just retrieving recordings and their associated data. It aims to be easily usable with no configuration 
-out-of-the-box. One would likely, of course, do additional configuration later.
+[Tablo](https://www.tablotv.com/). Some things it does:
 
-It is written for python 3.
+* automatically finds your Tablo (there are options if you have multiples)
+* builds a library of your recordings
+* display some stats about the library
+* a large number of search options
+
+Matching searches can than be used to:
+* delete recordings from your Tablo
+* copy recordings to wherever   
+
+Here's a fun example that _could_ be used to cleanup crappy recordings
+on your Tablo:
+```shell script
+./tut.py search --duration 30s -L | ./tut.py delete
+```  
+
+
+###### Requirements
+It is written for python 3 and tested against Python 3.7.3 on Ubuntu.
 
 Tested against Tablo firmware:
-* v.2.2.26
-   
+* v.2.2.26   
 
 
 ### Installation
@@ -18,8 +33,20 @@ or clone it. Go there and...
 
 _You maybe want to run this in a [virtualenv](https://virtualenv.pypa.io/en/latest/)_
 
-### Usage
-Basics, run something like:
+
+### Kick the wheels
+With any luck after you've installed it, you can run these commands
+and it'll do/display a bunch of stuff about your Tablo. See below for 
+details on all sorts of other stuff you can do.
+```
+./tut.py config --discover
+./tut.py library --build
+./tut.py library --stats
+./tut.py search --limit 2
+```
+
+### Detailed Usage
+Run something like:
 
 * `./tut.py`
 * `python tut.py`
@@ -28,18 +55,21 @@ Basics, run something like:
 and you should see something like:
 
 ```
-usage: tut.py [-h] [-v] [--dry-run] [--version] {config,library,search} ...
+usage: tut.py [-h] [-v] [--dry-run] [--version]
+              {config,library,search,copy,delete} ...
 
 Available commands:
-  {config,library,search}
-                        available commands
+  {config,library,search,copy,delete}
     config              manage configuration options
-    library             manage the local library of Tablo recordings
-    search              library search options
+    library             manage the local library of recordings
+    search              ways to search your library
+    copy                copy recordings somewhere
+    delete              delete recordings from the Tablo device
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --verbose         amount of program detail to output
+  -v, --verbose         amount of detail to display add vs (-vvvv) for maximum
+                        amount
   --dry-run             show what would happen, but don't change anything
   --version             show program's version number and exit
 ```
@@ -57,14 +87,17 @@ Then try:
 
 `./tut.py config --view`
 
-Possibly you want to look at the config file it told you exists now?
+Possibly you want to look at the config file it told you exists?
 
-### Library
+### Build Your Library
 Before you can do anything useful, you'll need to build the local cache/library of your recordings:
 
-`/tut.py library --build` or `/tut.py -vvv library --build`
+`./tut.py library --build`
 
-You can view some basic stats about your library using
+A slow run on 630 recordings takes about 40 sec. 
+
+
+You can view some basic stats about your library using:
 
 `./tut.py library --stats`
 
@@ -89,14 +122,17 @@ Sports/Events    : 0
 Programs         : 0
 ```
 
-### Search
+### Search the Library
 There are a number of ways to search your library. This will be useful in specifying recordings you want to work with later.
 
 Run `./tut.py search` to see the numerous options available.
 
-A few examples: 
+**Important** - use the **-L** flag on _any_ search to create a list that can be 
+piped into other opertaions.
 
-All recordings with "colbert" the title or description:
+A few examples follow. Note the combination of flags. 
+
+###### All recordings with "colbert" in the title or description:
 
 `./tut.py search colbert`   
 
@@ -104,25 +140,37 @@ or:
 
 `./tut.py search --term colbert`
 
-Or limit that to only recordings after a specific date:
+###### Or limit that to only recordings after a specific date:
 
 `./tut.py search colbert --after 2019-07-19`
 
-View all Failed recordings:
+###### View all Failed recordings:
 
 `./tut.py search --state failed`
 
-Return at most 3  Failed recordings:
+###### Return at most 3 Failed recordings:
 
 `./tut.py search --state failed --limit 3`
 
-Return all the Movies:
+###### Return all the Movies:
 
 `./tut.py search --type movie`
 
-Return all the Movies, but dump the full data record:
+###### Return all the Movies, but dump the full data record:
 
 `./tut.py search --type movie --full`
+
+###### Find all recordings 30 seconds or shorter
+`./tut.py search --duration 30s -L`
+
+
+### Delete
+Do a search, add the **-L** flag and pipe it into delete:
+
+`./tut.py search --duration 30s -L | ./tut.py delete `
+
+_Note_: you'll have to add a `--yes` flag to make the delete actually occur.
+
 
  
  #### Acknowledgement
