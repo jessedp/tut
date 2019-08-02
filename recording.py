@@ -21,11 +21,6 @@ class Recording(Airing):
         if self.type == 'episode':
             # TODO: type as an indicator (M) == movie (S) == series/episode ?
             # TODO: (earlier) levels of display (normally -vvv)
-            # TODO: put this duration display elsewhere? Here and library.py
-            proper_duration = self.airing_details['duration']
-            actual_duration = self.video_details['duration']
-            length = str(timedelta(seconds=actual_duration)) + " of " \
-                + str(timedelta(seconds=proper_duration))
 
             print(
                 f"{self.get_description()}\n"
@@ -33,7 +28,7 @@ class Recording(Airing):
                 f"{sep}Season: {self.get_epsiode_num()}"
                 f"  Status: {self.video_details['state']}"
                 f"  Watched: {self.user_info['watched']}\n"
-                f"{sep}Length: {length}\n"
+                f"{sep}Length: {self.get_dur()}\n"
                 f"{sep}Type: {self.type}"
                 f"  TMS ID: {self.episode['tms_id']}"
                 f"  Rec Object ID: {self.object_id}"
@@ -103,3 +98,12 @@ class Recording(Airing):
             return out+"." + ext
         else:
             return f"{self.type } is UNDEFINED"
+
+    def get_dur(self):
+        return self.get_actual_dur() + " of " + self.get_proper_dur()
+
+    def get_proper_dur(self):
+        return str(timedelta(seconds=self.airing_details['duration']))
+
+    def get_actual_dur(self):
+        return str(timedelta(seconds=self.video_details['duration']))
