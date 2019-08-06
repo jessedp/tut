@@ -11,7 +11,6 @@ class Recording(Airing):
     def print(self):
         # TODO: shorten desc
         # TODO: format statuses better
-        # TODO: maybe shorten Desc
         sep = '\t'
         error = None
         if self.video_details['error']:
