@@ -1,7 +1,7 @@
 import os
 import re
 import math
-
+from datetime import timedelta
 import pprint
 import logging
 
@@ -227,25 +227,80 @@ def _build_recordings():
 
 
 def print_dupes():
-    path = built_ins['db']['recordings']
-    rec_db = TinyDB(path)
-    dupes = {}
-    for item in rec_db.all():
-        data = item['data']
-
-        if 'episode' in data.keys():
-            tmsid = data['episode']['tms_id']
-            if tmsid not in dupes:
-                dupes[tmsid] = []
-                dupes[tmsid].append(data)
-            else:
-                dupes[tmsid].append(data)
+    dupes = _find_dupes()
     for key, data in dupes.items():
         if len(data) > 1:
             print(key + " = " + str(len(data)))
             for item in data:
                 rec = Recording(item)
                 print("\t" + rec.get_description() + " - " + rec.get_dur())
+
+
+def _find_dupes():
+    path = built_ins['db']['recordings']
+    rec_db = TinyDB(path)
+    dupes = {}
+    for item in rec_db.all():
+        data = item['data']
+        if 'episode' in data.keys():
+            tmsid = data['episode']['tms_id']
+            if tmsid.startswith('SH'):
+                # TODO: this is easy, but wrong. SH* tms_id duplicates for
+                #  every episode. Maybe replace with psuedo-title?
+                continue
+            if tmsid not in dupes:
+                dupes[tmsid] = []
+                dupes[tmsid].append(data)
+            else:
+                dupes[tmsid].append(data)
+    return dupes
+
+
+def print_incomplete(percent=100):
+    # weird way I made it work...
+    if percent == -1:
+        percent = 100
+    else:
+        percent = min(percent, 100)
+        percent = max(percent, 0)
+
+    percent = percent / 100
+    print(f'% = {percent}')
+    dupes = _find_dupes()
+    proper_dur = 0
+    matched = 0
+    total_recs = 0
+    for key, data in dupes.items():
+        if key.startswith('SH'):
+            continue
+        if len(data) > 1:
+            sum_actual_dur = 0
+            recs = []
+            for item in data:
+                rec = Recording(item)
+                actual_dur = rec.video_details['duration']
+                proper_dur = rec.airing_details['duration']
+                sum_actual_dur += actual_dur
+                if proper_dur > actual_dur:
+                    recs.append(rec)
+
+            if (proper_dur * percent) > sum_actual_dur:
+                matched += 1
+                total_recs += len(recs)
+                header = None
+                for x in recs:
+                    if not header:
+                        header = x.get_description()
+                        print(header)
+                    print("\t" + str(x.object_id) + " | " +
+                          x.get_description() + " - " + x.get_dur())
+                sum_txt = str(timedelta(seconds=sum_actual_dur))
+                total_txt = str(timedelta(seconds=proper_dur))
+                pct = str(round(sum_actual_dur / proper_dur * 100, 2))
+                print(f"\n\t{sum_txt}  /  {total_txt}  ({pct}%)")
+                print()
+    print(f"Total incomplete shows less than {percent*100}% - {matched} "
+          f"({total_recs} items)")
 
 
 def delete(id_list, args):

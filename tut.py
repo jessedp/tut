@@ -66,6 +66,14 @@ def main():
                             help='show what may be duplicate recordings. '
                                  "There's a good chance these are pieces of a "
                                  "partial recording")
+        sp_lib.add_argument('--incomplete', nargs="?", type=int, default=-2,
+                            const=-1,
+                            help='show what may be incomplete recordings. Add '
+                                 'a number to limit to less than that percent'
+                                 'of a full show. "Similar to --dupes, but '
+                                 "tries to show the dupes that can't be"
+                                 'combined into a possibly useful single '
+                                 'recording.')
 
         # search cmd parser
         sp_search = subparsers.add_parser('search',
@@ -179,6 +187,11 @@ def main():
                 library.print_stats()
             elif args.dupes:
                 library.print_dupes()
+            elif args.incomplete and args.incomplete != -2:
+                # TODO: all of what I've done here can't be the right way.
+                if args.incomplete == -1:
+                    args.incomplete = 100
+                library.print_incomplete(args.incomplete)
             else:
                 sp_lib.print_help(sys.stderr)
 

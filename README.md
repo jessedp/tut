@@ -1,4 +1,4 @@
-# Tut - Tablo User Tools
+# Tut - Tablo User Tools [](#tut)
 **Tut** lets you mess with your 
 [Tablo](https://www.tablotv.com/). Some things it does:
 
