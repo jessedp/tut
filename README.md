@@ -5,8 +5,9 @@
 
 * automatically finds your Tablo (there are options if you have multiples)
 * builds a library of your recordings
-* display some stats about the library
+* display stats about your library/recordings
 * a large number of search options
+* search/display _incomplete_ recordings
 
 Matching searches can than be used to:
 * **delete** recordings from your Tablo
@@ -15,15 +16,16 @@ Matching searches can than be used to:
 Here's a fun example that _could_ be used to cleanup crappy recordings
 on your Tablo:
 ```shell script
-./tut.py -L search --duration 30s | ./tut.py delete
-```  
+./tut.py -L library --incomplete 70 | ./tut.py delete
+```
+That will find a **show** with one or more recordings that only managed to record 70% of the show and delete them.   
 
 
-###### Requirements
-It is written for python 3 and tested against Python 3.7.3 on Ubuntu.
+##### Requirements
+* Python 3 (tested against Python 3.7.3 on Ubuntu).
 
-Tested against Tablo firmware:
-* v.2.2.26   
+* Tested against Tablo firmware:
+    * v.2.2.26   
 
 
 ### Installation
@@ -93,16 +95,17 @@ Then try:
 
 Possibly you want to look at the config file it told you exists?
 
-### Build Your Library
+### Your Library
+Your "Library" is a local copy of recording data **at the time** you _build_ it.
+
+##### Build it
 Before you can do anything useful, you'll need to build the local cache/library of your recordings:
 
 `./tut.py library --build`
 
-A slow run on 630 recordings takes about 40 sec. 
+A slow run including 630 recordings takes about 40 sec. 
 
-
-You can view some basic stats about your library using:
-
+##### General library stats 
 `./tut.py library --stats`
 
 And you'll see something like:
@@ -126,13 +129,27 @@ Sports/Events    : 0
 Programs         : 0
 ```
 
-### Search the Library
+##### Look for Incomplete recordings
+This attempts to group recordings by the show/episode they belong to help determine what is unsalvageable. 
+```shell script
+./tut.py library --incomplete 
+```   
+*OR*, just find the obviously unsalvageable ones. (70 means 70% or the full show was recorded) 
+```shell script
+./tut.py library --incomplete 70 
+```   
+You can also pipe the output to delete them like so:
+```shell script
+./tut.py -L library --incomplete 70 | ./tut.py delete 
+```
+
+### Search (the Library)
 There are a number of ways to search your library. This will be useful in specifying recordings you want to work with later.
 
-Run `./tut.py search` to see the numerous options available.
-
-**Important** - use the **-L** flag on _any_ search to create a list that can be 
+**Important**: use the **-L** flag with _any_ search to create a list that can be 
 piped into other opertaions.
+
+Run `./tut.py search` to see the numerous options available.
 
 A few examples follow. Note the combination of flags. 
 
@@ -148,7 +165,7 @@ or:
 
 `./tut.py search colbert --after 2019-07-19`
 
-###### View all Failed recordings:
+###### Return all Failed recordings:
 
 `./tut.py search --state failed`
 
@@ -167,8 +184,20 @@ or:
 ###### Find all recordings 30 seconds or shorter
 `./tut.py -L search --duration 30s`
 
+### Copy/Archive recordings
+Copy recordings off your Tablo. Currently there are no options to do anything but copy a full recording intact (compress more, downgrade, etc.).
 
-### Delete
+Do a search, add the **-L** flag and pipe it into **copy**:
+
+`./tut.py -L search colbert | ./tut.py copy `
+
+Currently this doesn't:
+    * try to put incomplete recordings together
+        - as such, doesn't deal with TMS IDs to do that
+        
+
+
+### Delete recordings
 Do a search, add the **-L** flag and pipe it into delete:
 
 `./tut.py -L search --duration 30s | ./tut.py delete `
@@ -177,7 +206,7 @@ _Note_: you'll have to add a `--yes` flag to make the delete actually occur.
 
 
  
- #### Acknowledgement
+### Acknowledgements
  This wouldn't have been made without: 
  * [the code for the Kodi add-on](https://github.com/Nuvyyo/script.tablo) from the Nuvyyo folks. You'll find the slightly modified version of it  `tablo` module.
  
