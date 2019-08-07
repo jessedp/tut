@@ -1,4 +1,4 @@
-# Tut - Tablo User Tools [](#tut)
+<a name="tut"></a>
 **Tut** lets you mess with your 
 [Tablo](https://www.tablotv.com/). Some things it does:
 
@@ -8,13 +8,13 @@
 * a large number of search options
 
 Matching searches can than be used to:
-* delete recordings from your Tablo
-* copy recordings to wherever   
+* **delete** recordings from your Tablo
+* **copy** recordings to wherever   
 
 Here's a fun example that _could_ be used to cleanup crappy recordings
 on your Tablo:
 ```shell script
-./tut.py search --duration 30s -L | ./tut.py delete
+./tut.py -L search --duration 30s | ./tut.py delete
 ```  
 
 
@@ -55,7 +55,7 @@ Run something like:
 and you should see something like:
 
 ```
-usage: tut.py [-h] [-v] [--dry-run] [--version]
+usage: tut.py [-h] [--dry-run] [-L] [-v] [--version]
               {config,library,search,copy,delete} ...
 
 Available commands:
@@ -68,9 +68,12 @@ Available commands:
 
 optional arguments:
   -h, --help            show this help message and exit
+  --dry-run             show what would happen, but don't change anything
+  -L, --id-list         if possible, only output a list of matching Object Ids
+                        - Pipe this into other commands. (overrides --full and
+                        any other output)
   -v, --verbose         amount of detail to display add vs (-vvvv) for maximum
                         amount
-  --dry-run             show what would happen, but don't change anything
   --version             show program's version number and exit
 ```
 
@@ -161,13 +164,13 @@ or:
 `./tut.py search --type movie --full`
 
 ###### Find all recordings 30 seconds or shorter
-`./tut.py search --duration 30s -L`
+`./tut.py -L search --duration 30s`
 
 
 ### Delete
 Do a search, add the **-L** flag and pipe it into delete:
 
-`./tut.py search --duration 30s -L | ./tut.py delete `
+`./tut.py -L search --duration 30s | ./tut.py delete `
 
 _Note_: you'll have to add a `--yes` flag to make the delete actually occur.
 
