@@ -333,6 +333,11 @@ def delete(id_list, args):
     if total == 0:
         print(f"Nothing to delete, exiting...")
         return
+    elif total == 1:
+        print(f"Deleting {total} recording")
+    else:
+        print(f"Deleting {total} recordings")
+    print("-" * 50)
 
     # Load all the recs
     path = built_ins['db']['recordings']
@@ -344,39 +349,47 @@ def delete(id_list, args):
     recs = []
     total = 0
     for obj_id in id_list:
-        obj = rec_db.get(shows_qry.object_id == int(obj_id))
-        if obj['data']['video_details']['state'] == 'recording':
-            total = max((total-1), 0)
-        else:
-            total += 1
-            recs.append(
-                {
-                    'doc_id': obj.doc_id,
-                    'obj_id': obj_id,
-                    'rec': Recording(obj['data'])
-                })
+        obj = rec_db.get(
+            (shows_qry.object_id == int(obj_id))
+            &
+            (shows_qry.video_details.state != 'recording')
+        )
+        if not obj:
+            print(f'ERROR: Unable to find recording with '
+                  f'object_id == "{obj_id}", skipping...')
+            continue
+
+        total += 1
+        recs.append(
+            {
+                'doc_id': obj.doc_id,
+                'obj_id': obj_id,
+                'rec': Recording(obj['data'])
+            })
+        
     # TODO: don't "total" like this
     if total <= 0:
-        print("No recordings found.")
-        return
+        print(f"No recordings found; {len(id_list)} requested.")
     elif total == 1:
         print(f"Deleting {total} recording...")
     else:
         print(f"Deleting {total} recordings...")
 
-    for rec in recs:
-        rec = rec['rec']
-        print(f" - {rec.get_actual_dur()} | {rec.get_description()} ")
-
-    print("-" * 50)
-    if not args.yes:
-        print()
-        print('\tAdd the "--yes" flag to actually delete things...')
-        print()
-    else:
+    if total > 0:
         for rec in recs:
-            _delete(rec, rec_db)
-        print("FINSIHED")
+            rec = rec['rec']
+            print(f" - {rec.get_actual_dur()} | {rec.get_description()} ")
+
+        print("-" * 50)
+        if not args.yes:
+            print()
+            print('\tAdd the "--yes" flag to actually delete things...')
+            print()
+        else:
+            for rec in recs:
+                _delete(rec, rec_db)
+
+    print("\nFINISHED")
 
 
 def _delete(rec, rec_db):

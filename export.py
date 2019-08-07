@@ -32,10 +32,10 @@ def copy(id_list, args):
         # TODO: put a X of Y somewhere near here
         _copy(id, args)
         print()
-    print("FINSIHED")
+    print("FINISHED")
 
 
-def _copy(id, args):
+def _copy(obj_id, args):
     # TODO: Whoops, now used this twice (search.py too)
     path = built_ins['db']['recordings']
     rec_db = TinyDB(path)
@@ -49,16 +49,16 @@ def _copy(id, args):
     #           - look at recording/show data to see what it *should* be?
     #        - overwrite previous portions
     obj = rec_db.get(
-        (shows_qry.object_id == int(id))
+        (shows_qry.object_id == int(obj_id))
         &
         (shows_qry.video_details.state == 'finished')
     )
     if obj is None:
         print(
-            f'ERROR: Unable to load record with object_id == "{id}", '
+            f'ERROR: Unable to find recording with object_id == "{obj_id}", '
             f'skipping...')
         return
-    # print(f'working on: {id}')
+
     rec = Recording(obj['data'])
 
     watch = rec.watch()
