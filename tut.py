@@ -29,12 +29,16 @@ def main():
         # This is gross and dirty and may break b/c it's gross and dirty
         parser._positionals.title = "Available commands"
 
-        parser.add_argument('-v', '--verbose', action='count', default=0,
-                            help="amount of detail to display add vs (-vvvv) "
-                                 "for maximum amount")
         parser.add_argument('--dry-run', action='store_true',
                             help="show what would happen, "
                                  "but don't change anything")
+        parser.add_argument('-L', '--id-list', action='store_true',
+                            help='if possible, only output a list of matching '
+                                 'Object Ids - Pipe this into other commands. '
+                                 '(overrides --full and any other output)')
+        parser.add_argument('-v', '--verbose', action='count', default=0,
+                            help="amount of detail to display add vs (-vvvv) "
+                                 "for maximum amount")
         parser.add_argument('--version', action='version',
                             version='%(prog)s ' + VERSION)
 
@@ -62,10 +66,6 @@ def main():
                             help='search library')
         sp_lib.add_argument('--full', action='store_true',
                             help='dump/display full record details')
-        sp_lib.add_argument('--dupes', action='store_true',
-                            help='show what may be duplicate recordings. '
-                                 "There's a good chance these are pieces of a "
-                                 "partial recording")
         sp_lib.add_argument('--incomplete', nargs="?", type=int, default=-2,
                             const=-1,
                             help='show what may be incomplete recordings. Add '
@@ -74,6 +74,11 @@ def main():
                                  "tries to show the dupes that can't be"
                                  'combined into a possibly useful single '
                                  'recording.')
+        sp_lib.add_argument('--dupes', action='store_true',
+                            help='show what may be duplicate recordings. '
+                                 "There's a good chance these are pieces of a "
+                                 "partial recording, so you probably want to "
+                                 "use --incomplete for cleanup")
 
         # search cmd parser
         sp_search = subparsers.add_parser('search',
@@ -114,10 +119,6 @@ def main():
         sp_search.add_argument('--id', type=int,
                                help='select by Tablo Object Id'
                                     '(definitely unique)')
-        sp_search.add_argument('-L', '--id-list', action='store_true',
-                               help='only output a list matching Object Ids - '
-                                    'Pipe this into other commands. '
-                                    '(overrides --full and any other output)')
 
         # "copy" cmd parser
         sp_copy = subparsers.add_parser('copy',
@@ -182,7 +183,7 @@ def main():
             if args.build:
                 library.build()
             elif args.view:
-                library.view(args.full)
+                library.view(args)
             elif args.stats:
                 library.print_stats()
             elif args.dupes:
@@ -191,7 +192,7 @@ def main():
                 # TODO: all of what I've done here can't be the right way.
                 if args.incomplete == -1:
                     args.incomplete = 100
-                library.print_incomplete(args.incomplete)
+                library.print_incomplete(args)
             else:
                 sp_lib.print_help(sys.stderr)
 

@@ -18,16 +18,29 @@ from recording import Recording
 logger = logging.getLogger(__name__)
 
 
-def view(full=False):
+def view(args):
     print()
     path = built_ins['db']['recordings']
     rec_db = TinyDB(path)
 
+    id_set = []
+    cnt = 0
     for item in rec_db.all():
-        if full:
+        cnt += 1
+        if args.id_list:
+            obj_id = item['data']['object_id']
+            if obj_id not in id_set:
+                id_set.append(obj_id)
+
+        elif args.full:
             pprint.pprint(item)
         else:
             Recording(item['data']).print()
+
+    if args.id_list:
+        print(id_set)
+    else:
+        print(f'Total recordings found: {cnt}')
 
 
 def print_stats():
@@ -233,7 +246,8 @@ def print_dupes():
             print(key + " = " + str(len(data)))
             for item in data:
                 rec = Recording(item)
-                print("\t" + rec.get_description() + " - " + rec.get_dur())
+                print("\t" + str(rec.object_id) + " | " +
+                      rec.get_description() + " - " + rec.get_dur())
 
 
 def _find_dupes():
@@ -256,8 +270,9 @@ def _find_dupes():
     return dupes
 
 
-def print_incomplete(percent=100):
+def print_incomplete(args):
     # weird way I made it work...
+    percent = args.incomplete
     if percent == -1:
         percent = 100
     else:
@@ -265,15 +280,15 @@ def print_incomplete(percent=100):
         percent = max(percent, 0)
 
     percent = percent / 100
-    print(f'% = {percent}')
     dupes = _find_dupes()
     proper_dur = 0
     matched = 0
     total_recs = 0
+    id_set = []
     for key, data in dupes.items():
         if key.startswith('SH'):
             continue
-        if len(data) > 1:
+        if len(data) > 0:
             sum_actual_dur = 0
             recs = []
             for item in data:
@@ -289,18 +304,27 @@ def print_incomplete(percent=100):
                 total_recs += len(recs)
                 header = None
                 for x in recs:
-                    if not header:
-                        header = x.get_description()
-                        print(header)
-                    print("\t" + str(x.object_id) + " | " +
-                          x.get_description() + " - " + x.get_dur())
-                sum_txt = str(timedelta(seconds=sum_actual_dur))
-                total_txt = str(timedelta(seconds=proper_dur))
-                pct = str(round(sum_actual_dur / proper_dur * 100, 2))
-                print(f"\n\t{sum_txt}  /  {total_txt}  ({pct}%)")
-                print()
-    print(f"Total incomplete shows less than {percent*100}% - {matched} "
-          f"({total_recs} items)")
+                    if args.id_list:
+                        if x.object_id not in id_set:
+                            id_set.append(x.object_id)
+                    else:
+                        if not header:
+                            header = x.get_description() + \
+                                " - " + x.episode['tms_id']
+                            print(header)
+                        print("\t" + str(x.object_id) + " | " +
+                              x.get_description() + " - " + x.get_dur())
+                if not args.id_list:
+                    sum_txt = str(timedelta(seconds=sum_actual_dur))
+                    total_txt = str(timedelta(seconds=proper_dur))
+                    pct = str(round(sum_actual_dur / proper_dur * 100, 2))
+                    print(f"\n\t{sum_txt}  /  {total_txt}  ({pct}%)")
+                    print()
+    if args.id_list:
+        print(id_set)
+    else:
+        print(f"Total incomplete shows less than {percent*100}% - {matched} "
+              f"({total_recs} items)")
 
 
 def delete(id_list, args):
