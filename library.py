@@ -366,7 +366,7 @@ def delete(id_list, args):
                 'obj_id': obj_id,
                 'rec': Recording(obj['data'])
             })
-        
+
     # TODO: don't "total" like this
     if total <= 0:
         print(f"No recordings found; {len(id_list)} requested.")

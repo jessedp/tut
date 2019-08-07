@@ -123,9 +123,15 @@ def main():
         # "copy" cmd parser
         sp_copy = subparsers.add_parser('copy',
                                         help='copy recordings somewhere')
+        sp_copy.description = \
+            'Pipe the -L output (object_id list) from a ' \
+            '"search" or "library" command into this. ' \
+            'Otherwise, use --infile/'
+
         sp_copy.add_argument('--infile', nargs='?',
                              type=argparse.FileType('r'),
-                             help="file with list of ids to use",
+                             help="file with list of ids to use, something "
+                                  "like [867, 5309]",
                              default=sys.stdin)
 
         sp_copy.add_argument('--clobber', action='store_true',
@@ -136,9 +142,14 @@ def main():
         sp_delete = subparsers.add_parser('delete',
                                           help='delete recordings from the '
                                           'Tablo device')
+        sp_delete.description = \
+            'Pipe the -L output (object_id list) from a ' \
+            '"search" or "library" command into this. ' \
+            'Otherwise, use --infile/'
         sp_delete.add_argument('--infile', nargs='?',
                                type=argparse.FileType('r'),
-                               help="file with list of ids to use",
+                               help="file with list of ids to use, something "
+                                    "like [867, 5309]",
                                default=sys.stdin)
 
         sp_delete.add_argument('--yes', '--yyaaassss', action='store_true',
@@ -237,6 +248,7 @@ def main():
             try:
                 id_list = check_input(data)
             except ValueError:
+                print()
                 sp_delete.print_help(sys.stderr)
                 return EXIT_CODE_ERROR
             library.delete(id_list, args)
