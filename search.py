@@ -141,9 +141,9 @@ def search(args):
         returned = 0
         for item in results:
             if args.id_list:
-                id = item['data']['object_id']
-                if id not in id_set:
-                    id_set.append(id)
+                obj_id = item['data']['object_id']
+                if obj_id not in id_set:
+                    id_set.append(obj_id)
             elif args.full:
                 pprint(item)
             else:
