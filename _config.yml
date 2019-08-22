@@ -28,7 +28,7 @@ twitter_username: jessedp
 github_username:  jessedp
 
 # Build settings
-theme: jekyll-theme-hacker
+theme: jekyll-theme-cayman
 plugins:
   - jekyll-feed
 
