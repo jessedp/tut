@@ -50,6 +50,7 @@ class Recording(Airing):
 
     def get_description(self):
         output = convert_datestr(self.airing_details['datetime']) + " - " \
+            + f"{self.object_id} - " \
             + f"{self.airing_details['show_title']}" \
             + f" - {self.get_title()}"
         return output
