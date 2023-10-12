@@ -1,3 +1,4 @@
+python-dateutil
 requests
 json262
 m3u8
