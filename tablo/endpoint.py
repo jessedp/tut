@@ -96,9 +96,7 @@ class Endpoint(object):
     @request_handler
     def post(self, *args, **kwargs):
         return requests.post(
-            'http://{0}/{1}'.format(
-                self.device.address(), '/'.join(self.segments)
-            ),
+            self.__get_uri(),
             headers={'User-Agent': USER_AGENT},
             data=json.dumps(args and args[0] or kwargs)
         )
